@@ -1,0 +1,3 @@
+# Vorschau - vor dem offiziellen Start entfernen
+User-agent: *
+Disallow: /
