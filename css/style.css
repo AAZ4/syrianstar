@@ -101,7 +101,7 @@ em { font-style: italic; color: var(--brass); }
 @media (max-width: 420px) { .nav__brand span { display: none; } }
 
 /* ═════════ Hero: Die Vitrine ═════════ */
-.vitrine { position: relative; height: calc(100vh + 8 * 62vh); }
+.vitrine { position: relative; height: 165vh; height: 165svh; }
 .vitrine__sticky { position: sticky; top: 0; height: 100vh; height: 100svh; overflow: hidden; }
 .vitrine__wall {
   position: absolute; inset: 0;
@@ -143,6 +143,10 @@ em { font-style: italic; color: var(--brass); }
 .vitrine__label strong { font: 700 28px/1.05 var(--f-display); grid-row: 2; }
 .vitrine__label .vitrine__ar { grid-row: 2; font-size: 18px; color: var(--brass); }
 .vitrine__label small { grid-column: 1 / -1; color: var(--ink-soft); font-size: 13px; }
+.vitrine__swipe { position: absolute; left: 50%; top: -34px; translate: -50% 0; white-space: nowrap; font-size: 12.5px; font-weight: 600; letter-spacing: .04em; color: var(--ink-soft); background: rgba(255, 253, 248, .8); padding: 4px 12px; border-radius: 999px; animation: nudge 2.4s ease-in-out infinite; }
+
+.swiped .vitrine__swipe { display: none; }
+@keyframes nudge { 0%, 100% { transform: translateX(0); } 25% { transform: translateX(-6px); } 75% { transform: translateX(6px); } }
 .vbtn { width: 44px; height: 44px; border-radius: 50%; border: 1px solid var(--line); background: var(--cream); color: var(--ink); font: 400 26px/1 var(--f-display); cursor: pointer; flex: none; transition: background .2s, border-color .2s; }
 .vbtn:hover:not(:disabled) { border-color: var(--brass); background: #fff; }
 .vbtn:disabled { opacity: .35; cursor: default; }

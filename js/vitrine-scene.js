@@ -14,7 +14,6 @@ const smooth = (a, b, v) => { const t = clamp01((v - a) / (b - a)); return t * t
 const lerp = (a, b, t) => a + (b - a) * t;
 
 export const SPACING = 2.4;          // Abstand der Tabletts
-export const INTRO = 0.08;           // Scroll-Anteil der Begrüßung
 
 // ── Texturen ─────────────────────────────────────────────────
 function canvasTex(size, draw, { srgb = true, repeat = 1 } = {}) {
@@ -455,8 +454,9 @@ export async function initVitrine({ canvas, trays, onTray, onSelect, onHover, re
   });
 
   // ── Zustand ──
-  let width = 1, height = 1, target = 0, prog = 0, running = false, raf = 0;
-  let selected = null, hovered = null, current = -1;
+  let width = 1, height = 1, zoomTarget = 0, zoom = 0, running = false, raf = 0;
+  let trayPos = 0, trayTarget = 0, dragging = false;   // Position entlang der Theke (in Tabletts)
+  let selected = null, hovered = null, current = 0;
   const pointer = { x: 0, y: 0, sx: 0, sy: 0 };
   const clock = new THREE.Clock();
   const tmp = new THREE.Vector3(), dir = new THREE.Vector3();
@@ -469,21 +469,18 @@ export async function initVitrine({ canvas, trays, onTray, onSelect, onHover, re
     camera.updateProjectionMatrix();
   }
 
-  const fOf = (p) => clamp01((p - INTRO) / (1 - INTRO)) * (N - 1);
 
   function frame() {
     if (!running) return;
     raf = requestAnimationFrame(frame);
     const dt = Math.min(clock.getDelta(), 0.05), t = clock.elapsedTime;
-    prog += (target - prog) * Math.min(1, dt * 6);
+    zoom += (zoomTarget - zoom) * Math.min(1, dt * 6);
+    if (!dragging) trayPos += (trayTarget - trayPos) * Math.min(1, dt * 7);
 
     // Kamera fährt die Theke entlang und verweilt an jedem Tablett
-    const f = fOf(prog), i = Math.floor(f), frac = f - i;
-    const fx = Math.min(N - 1, i + smooth(0.2, 0.8, frac));
-    const idx = Math.round(f);
-    if (idx !== current) { current = idx; onTray?.(idx); if (selected && selected.userData.tray !== idx) deselect(); }
+    const fx = trayPos;
 
-    const intro = 1 - smooth(0, INTRO, prog);
+    const intro = 1 - smooth(0, 1, zoom);
     const small = isSmall();
     const aspect = width / height;
     const back = small ? Math.max(1, 1.0 / aspect) : Math.max(1, 1.45 / aspect);
@@ -564,31 +561,86 @@ export async function initVitrine({ canvas, trays, onTray, onSelect, onHover, re
     const hits = ray.intersectObjects(pieceRoots, true);
     return hits.length ? hits[0].object.userData.root : null;
   };
-  let down = null;
-  canvas.addEventListener('pointerdown', (e) => { down = { x: e.clientX, y: e.clientY }; });
-  canvas.addEventListener('pointerup', (e) => {
-    if (!down || Math.hypot(e.clientX - down.x, e.clientY - down.y) > 8) return;
-    const p = hit(e);
-    if (p) select(p); else deselect();
+  const pxPerTray = () => Math.min(width * 0.55, 420);
+  // aktuelles Gericht melden (sofort, unabhängig von der Animation)
+  const setCurrent = (i) => {
+    i = Math.max(0, Math.min(N - 1, i));
+    if (i === current) return;
+    current = i;
+    onTray?.(i);
+    if (selected && selected.userData.tray !== i) deselect();
+  };
+  const goTo = (i) => { trayTarget = Math.max(0, Math.min(N - 1, i)); setCurrent(trayTarget); };
+  let drag = null;
+  canvas.addEventListener('pointerdown', (e) => {
+    drag = { x: e.clientX, y: e.clientY, start: trayPos, base: trayTarget, moved: false, lastX: e.clientX, lastT: performance.now(), vx: 0 };
   });
   canvas.addEventListener('pointermove', (e) => {
     pointer.x = (e.clientX / innerWidth) * 2 - 1;
     pointer.y = (e.clientY / innerHeight) * 2 - 1;
+    if (drag) {
+      const dx = e.clientX - drag.x, dy = e.clientY - drag.y;
+      if (!drag.moved && zoomTarget > 0.6 && Math.abs(dx) > 10 && Math.abs(dx) > Math.abs(dy) * 1.2) {
+        drag.moved = true; dragging = true;
+        canvas.setPointerCapture?.(e.pointerId);
+        deselect();
+      }
+      if (drag.moved) {
+        const now = performance.now();
+        drag.vx = (e.clientX - drag.lastX) / Math.max(1, now - drag.lastT);
+        drag.lastX = e.clientX; drag.lastT = now;
+        trayPos = Math.max(-0.35, Math.min(N - 1 + 0.35, drag.start - dx / pxPerTray()));
+        setCurrent(Math.round(trayPos));
+        return;
+      }
+    }
     if (e.pointerType !== 'mouse') return;
     const p = hit(e);
     hovered = p && p !== selected ? p : null;
-    canvas.style.cursor = hovered ? 'pointer' : '';
+    canvas.style.cursor = hovered ? 'pointer' : (zoomTarget > 0.6 ? 'grab' : '');
     onHover?.(hovered ? hovered.userData.tray : null);
   });
+  const release = (e, cancelled) => {
+    if (!drag) return;
+    const d = drag; drag = null;
+    if (d.moved) {
+      dragging = false;
+      const startIdx = d.base;   // Gericht, auf dem der Wisch begann
+      // Schwung berücksichtigen; schon ein kurzer Wisch springt ein Gericht weiter
+      let tgt = Math.round(trayPos - (d.vx * 300) / pxPerTray());   // ~300 ms Schwung
+      if (tgt === startIdx && Math.abs(trayPos - d.start) > 0.12) tgt = startIdx + Math.sign(trayPos - d.start);
+      goTo(Math.max(startIdx - 1, Math.min(startIdx + 1, tgt)));
+      return;
+    }
+    if (cancelled || Math.hypot(e.clientX - d.x, e.clientY - d.y) > 8) return;
+    const p = hit(e);
+    if (p) { if (p.userData.tray !== Math.round(trayPos)) goTo(p.userData.tray); select(p); } else deselect();
+  };
+  canvas.addEventListener('pointerup', (e) => release(e, false));
+  canvas.addEventListener('pointercancel', (e) => release(e, true));
+  // Touchpad / Mausrad seitwärts
+  let wheelAcc = 0, wheelLock = 0;
+  canvas.addEventListener('wheel', (e) => {
+    if (zoomTarget < 0.6 || Math.abs(e.deltaX) <= Math.abs(e.deltaY)) return;
+    e.preventDefault();
+    const now = performance.now();
+    wheelAcc += e.deltaX;
+    if (now > wheelLock && Math.abs(wheelAcc) > 40) {
+      goTo(trayTarget + Math.sign(wheelAcc));
+      wheelAcc = 0; wheelLock = now + 450;
+    }
+  }, { passive: false });
   canvas.addEventListener('pointerleave', () => { hovered = null; });
 
   resize();
   addEventListener('resize', resize);
 
   return {
-    setProgress(v) { target = clamp01(v); },
-    progressFor(i) { return INTRO + (1 - INTRO) * (i / (N - 1)); },
+    setZoom(v) { zoomTarget = clamp01(v); },
+    goTo,
+    get index() { return trayTarget; },
     selectFirstOf(i) { const p = pieceRoots.find((q) => q.userData.tray === i); if (p) select(p); },
+    get zoomed() { return zoomTarget > 0.6; },
     deselect,
     start() { if (running) return; running = true; clock.getDelta(); frame(); },
     stop() { running = false; cancelAnimationFrame(raf); },

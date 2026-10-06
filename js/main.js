@@ -24,6 +24,7 @@ async function initVitrine() {
   let api = null, current = 0;
 
   const showTray = (i) => {
+    if (i !== 0) caption.classList.add('swiped');   // Wisch-Hinweis nach dem ersten Wechsel ausblenden
     current = i;
     const t = TRAYS[i];
     $('#vCount').textContent = `${String(i + 1).padStart(2, '0')} / ${String(TRAYS.length).padStart(2, '0')}`;
@@ -50,16 +51,20 @@ async function initVitrine() {
   };
   showTray(0);
 
-  const scrollToTray = (i) => {
-    if (!api) return;
-    const top = section.offsetTop + api.progressFor(i) * (section.offsetHeight - innerHeight);
-    scrollTo({ top, behavior: reducedMotion ? 'auto' : 'smooth' });
-  };
-  $('#vPrev').addEventListener('click', () => scrollToTray(Math.max(0, current - 1)));
-  $('#vNext').addEventListener('click', () => scrollToTray(Math.min(TRAYS.length - 1, current + 1)));
+  $('#vPrev').addEventListener('click', () => api?.goTo(current - 1));
+  $('#vNext').addEventListener('click', () => api?.goTo(current + 1));
   $('#vTaste').addEventListener('click', () => api?.selectFirstOf(current));
   $('#vClose').addEventListener('click', () => api?.deselect());
-  addEventListener('keydown', (e) => { if (e.key === 'Escape') api?.deselect(); });
+  addEventListener('keydown', (e) => {
+    if (!api) return;
+    if (e.key === 'Escape') api.deselect();
+    const r = section.getBoundingClientRect();
+    const inView = r.top < innerHeight * 0.5 && r.bottom > innerHeight * 0.5;
+    if (inView && api.zoomed && (e.key === 'ArrowRight' || e.key === 'ArrowLeft')) {
+      e.preventDefault();
+      api.goTo(current + (e.key === 'ArrowRight' ? 1 : -1));
+    }
+  });
 
   try {
     const { initVitrine: init } = await import('./vitrine-scene.js');
@@ -73,13 +78,14 @@ async function initVitrine() {
     return;
   }
 
+  // Senkrechtes Scrollen fährt nur kurz in die Theke hinein, danach scrollt die Seite normal weiter.
+  // Innerhalb der Theke wird seitwärts gewischt.
   const onScroll = () => {
     const r = section.getBoundingClientRect();
     const p = Math.min(1, Math.max(0, -r.top / (r.height - innerHeight)));
-    api.setProgress(p);
-    const introOn = p < 0.035;
-    intro.classList.toggle('is-hidden', !introOn);
-    caption.classList.toggle('is-shown', !introOn);
+    api.setZoom(p);
+    intro.classList.toggle('is-hidden', p > 0.3);
+    caption.classList.toggle('is-shown', p > 0.6);
   };
   addEventListener('scroll', onScroll, { passive: true });
   addEventListener('resize', onScroll);
