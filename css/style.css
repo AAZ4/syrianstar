@@ -101,7 +101,7 @@ em { font-style: italic; color: var(--brass); }
 @media (max-width: 420px) { .nav__brand span { display: none; } }
 
 /* ═════════ Hero: Die Vitrine ═════════ */
-.vitrine { position: relative; height: 165vh; height: 165svh; }
+.vitrine { position: relative; height: 230vh; height: 230svh; }   /* Hineinfahren + Haltezone */
 .vitrine__sticky { position: sticky; top: 0; height: 100vh; height: 100svh; overflow: hidden; }
 .vitrine__wall {
   position: absolute; inset: 0;

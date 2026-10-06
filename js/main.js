@@ -78,11 +78,12 @@ async function initVitrine() {
     return;
   }
 
-  // Senkrechtes Scrollen fährt nur kurz in die Theke hinein, danach scrollt die Seite normal weiter.
-  // Innerhalb der Theke wird seitwärts gewischt.
+  // Senkrechtes Scrollen fährt in die Theke hinein (ZOOM) und rastet dort am Gericht ein (HOLD).
+  // In der Theke wird seitwärts gewischt; erst deutliches Weiterscrollen verlässt die Theke.
+  const ZOOM = 0.65, HOLD_FROM = 0.15, HOLD_TO = 1.2;   // in Bildschirmhöhen ab Sektionsanfang
   const onScroll = () => {
     const r = section.getBoundingClientRect();
-    const p = Math.min(1, Math.max(0, -r.top / (r.height - innerHeight)));
+    const p = Math.min(1, Math.max(0, -r.top / (innerHeight * ZOOM)));
     api.setZoom(p);
     intro.classList.toggle('is-hidden', p > 0.3);
     caption.classList.toggle('is-shown', p > 0.6);
@@ -90,6 +91,22 @@ async function initVitrine() {
   addEventListener('scroll', onScroll, { passive: true });
   addEventListener('resize', onScroll);
   onScroll();
+
+  // Einrasten: kommt das Scrollen im Bereich der Theke zur Ruhe, wird sie genau angefahren
+  let touching = false, snapTimer = 0;
+  const snap = () => {
+    if (touching) return;
+    const offset = scrollY - section.offsetTop;
+    const hold = innerHeight * ZOOM;
+    if (offset > innerHeight * HOLD_FROM && offset < innerHeight * HOLD_TO && Math.abs(offset - hold) > 2) {
+      scrollTo({ top: section.offsetTop + hold, behavior: reducedMotion ? 'auto' : 'smooth' });
+    }
+  };
+  const later = () => { clearTimeout(snapTimer); snapTimer = setTimeout(snap, 140); };
+  if ('onscrollend' in window) addEventListener('scrollend', later);
+  else addEventListener('scroll', later, { passive: true });
+  addEventListener('touchstart', () => { touching = true; clearTimeout(snapTimer); }, { passive: true });
+  addEventListener('touchend', () => { touching = false; if (!('onscrollend' in window)) later(); }, { passive: true });
   new IntersectionObserver(([e]) => (e.isIntersecting ? api.start() : api.stop())).observe(section);
 }
 
