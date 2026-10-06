@@ -1,0 +1,8 @@
+// Cloudflare-Konfiguration: reine statische Website, kein Build nötig
+{
+  "name": "syrianstar",
+  "compatibility_date": "2026-10-01",
+  "assets": {
+    "directory": "./"
+  }
+}

@@ -1,0 +1,9 @@
+.git
+.gitignore
+.assetsignore
+.claude
+wrangler.jsonc
+serve.py
+syrian-star-upload
+syrian-star-upload.zip
+assets/speisekarte.pdf
