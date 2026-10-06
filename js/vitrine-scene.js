@@ -418,9 +418,9 @@ export async function initVitrine({ canvas, trays, onTray, onSelect, onHover, re
       lerp(1.75, 1.9, intro) * (small ? 1.1 : 1) - pointer.sy * 0.08,
       lerp(3.5, 5.6, intro) * back,
     );
-    tmp.set(cx + intro * 1.4, lerp(0.0, 0.15, intro), -0.05);
+    tmp.set(cx + intro * (small ? 1.4 : -0.6), lerp(0.0, 0.15, intro), -0.05);
     camera.lookAt(tmp);
-    camera.setViewOffset(width, height, 0, small ? height * lerp(0.13, -0.08, intro) : 0, width, height);
+    camera.setViewOffset(width, height, 0, small ? height * lerp(0.13, -0.08, intro) : -height * 0.16 * intro, width, height);
 
     key.position.set(cx + 1.5, 6, 4.5);
     key.target.position.set(cx, 0, 0);
