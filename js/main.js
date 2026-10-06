@@ -41,6 +41,9 @@ async function initVitrine() {
     $('#vdDe').textContent = t.de;
     $('#vdText').textContent = t.text;
     $('#vdIng').innerHTML = t.zutaten.map((z) => `<li>${esc(z)}</li>`).join('');
+    const img = $('#vdImg');
+    img.hidden = !t.img;
+    if (t.img) { img.src = t.img; img.alt = `${t.name} – Foto aus unserem Laden`; }
     $('#vdLex').onclick = (e) => { e.preventDefault(); api?.deselect(); openSweet(t.id); };
     detail.hidden = false;
     stage.classList.add('is-tasting');
