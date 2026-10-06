@@ -1,0 +1,75 @@
+<!doctype html>
+<html lang="de">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Speisekarte – Syrian Star Darmstadt</title>
+  <meta name="description" content="Speisekarte von Syrian Star, Schustergasse 14, Darmstadt: orientalische Süßigkeiten nach Gewicht, Manakish, Fatayer, Pizza, Torten und Getränke mit Preisen und Allergenen.">
+  <meta name="theme-color" content="#f5ede0">
+  <link rel="icon" href="assets/img/logo-bag.png">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,400..800&family=Manrope:wght@400;500;600;700&family=Reem+Kufi:wght@400..700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+
+  <header class="nav" id="nav">
+    <a class="nav__brand" href="index.html" aria-label="Syrian Star – Startseite">
+      <img src="assets/img/logo-bag.png" alt="" width="44" height="44">
+      <span>Syrian Star</span>
+    </a>
+    <nav class="nav__links" id="navLinks" aria-label="Hauptnavigation">
+      <a href="index.html#kuenefe">Künefe</a>
+      <a href="index.html#lexikon">Lexikon</a>
+      <a href="index.html#glossar">Wörterbuch</a>
+      <a href="karte.html" aria-current="page">Speisekarte</a>
+      <a href="index.html#besuch">Besuch</a>
+    </nav>
+    <a class="btn btn--small btn--gold nav__cta" href="tel:+4917661717073">Anrufen</a>
+    <button class="nav__burger" id="burger" aria-label="Menü öffnen" aria-expanded="false" aria-controls="navLinks"><span></span><span></span></button>
+  </header>
+
+  <main>
+    <section class="page-hero">
+      <div class="wrap">
+        <p class="eyebrow">Speisekarte · <span lang="ar" dir="rtl">قائمة الطعام</span></p>
+        <h1 class="section__title">Alles auf <em>einen Blick.</em></h1>
+        <p class="section__lead">Orientalische Süßigkeiten nach Gewicht, frische Backwaren, Torten und Getränke. Die Buchstaben hinter den Gerichten verweisen auf die Allergene.</p>
+      </div>
+    </section>
+
+    <nav class="cat-nav" id="catNav" aria-label="Kategorien"><div class="wrap cat-nav__inner"></div></nav>
+
+    <div id="menuSections"></div>
+
+    <section class="section karte karte--end">
+      <div class="wrap">
+        <details class="allergens">
+          <summary>Allergene &amp; Zusatzstoffe</summary>
+          <ul id="allergenList"></ul>
+          <p>Unsere Süßspeisen und einige Backwaren enthalten Zuckersirup (mit Zitronensäure E330). Trotz sorgfältiger Herstellung können Spuren anderer Allergene enthalten sein.</p>
+        </details>
+        <div class="hero__actions">
+          <a class="btn btn--ghost" href="assets/speisekarte.pdf" target="_blank" rel="noopener">Speisekarte als PDF</a>
+          <a class="btn btn--ghost" href="index.html#lexikon">Was ist was? Zum Süßigkeiten-Lexikon</a>
+        </div>
+      </div>
+    </section>
+  </main>
+
+  <footer class="footer">
+    <div class="wrap footer__inner">
+      <img src="assets/img/logo-bag.png" alt="Syrian Star Logo" width="88" height="88" loading="lazy">
+      <p>Traditionelle syrische Küche – frisch, authentisch und mit Liebe zubereitet.</p>
+      <nav aria-label="Rechtliches">
+        <a href="impressum.html">Impressum</a>
+        <a href="https://www.syrianstar.de/datenschutzklärung" target="_blank" rel="noopener">Datenschutz</a>
+      </nav>
+      <small>© <span id="year"></span> Syrian Star · Schustergasse 14 · 64283 Darmstadt</small>
+    </div>
+  </footer>
+
+  <script type="module" src="js/karte.js"></script>
+</body>
+</html>
