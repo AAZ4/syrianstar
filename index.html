@@ -7,7 +7,7 @@
   <meta name="robots" content="noindex, nofollow">
   <title>Syrian Star – Orientalische Süßigkeiten & Bäckerei in Darmstadt</title>
   <meta name="description" content="Syrian Star in der Schustergasse 14, Darmstadt: Künefe, Baklava, Mabrumeh, Halawet el Jibn, Manakish, Fatayer, Pizza und Torten – frisch, authentisch, mit Liebe gemacht.">
-  <meta name="theme-color" content="#f5ede0">
+  <meta name="theme-color" content="#f6f1e9">
   <link rel="icon" href="assets/img/logo-bag.png">
   <meta property="og:title" content="Syrian Star – Orientalische Süßigkeiten in Darmstadt">
   <meta property="og:description" content="Künefe, Baklava, Manakish & mehr – frisch aus der Schustergasse 14.">
@@ -15,8 +15,15 @@
 
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,400..800&family=Manrope:wght@400;500;600;700&family=Reem+Kufi:wght@400..700&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,500;0,600;0,700;1,500;1,600&family=Manrope:wght@400;500;600;700&family=Reem+Kufi:wght@400..700&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="css/style.css">
+
+  <script type="importmap">
+    { "imports": {
+      "three": "https://cdn.jsdelivr.net/npm/three@0.165.0/build/three.module.js",
+      "three/addons/": "https://cdn.jsdelivr.net/npm/three@0.165.0/examples/jsm/"
+    } }
+  </script>
 
   <script type="application/ld+json">
   {
@@ -54,33 +61,49 @@
 
   <main id="top">
 
-    <!-- ═════ Hero: Der Stern faltet sich zum Raster auf ═════ -->
-    <section class="star-hero" id="starHero" aria-label="Unsere acht Klassiker">
-      <div class="star-hero__sticky" id="starStage">
-        <div class="star-hero__pattern" aria-hidden="true"></div>
+    <!-- ═════ Hero: Die Vitrine ═════ -->
+    <section class="vitrine" id="vitrine" aria-label="Unsere Theke">
+      <div class="vitrine__sticky" id="vitrineStage">
+        <div class="vitrine__wall" aria-hidden="true"></div>
+        <canvas id="vitrineCanvas" aria-label="3D-Theke mit Süßigkeiten"></canvas>
 
-        <div class="hero-copy" id="heroCopy">
-          <p class="eyebrow">Orientalische Konditorei · Darmstadt</p>
-          <h1 class="hero-copy__title">Syrian<br>Star<span class="dot">.</span></h1>
-          <p class="hero-copy__ar" lang="ar" dir="rtl">النجمة السورية</p>
-          <p class="hero-copy__lead">Künefe, Baklava &amp; Mabrumeh mit Aleppo-Pistazien, warme Manakish am Morgen – syrische Backkunst in der Schustergasse.</p>
-          <div class="hero-copy__actions">
+        <div class="vitrine__intro" id="vIntro">
+          <p class="eyebrow">Syrian Star · Schustergasse 14 · Darmstadt</p>
+          <h1>Was darf's <em>sein?</em></h1>
+          <p class="vitrine__lead">Treten Sie an unsere Theke: Künefe, Baklava, Mabrumeh &amp; mehr – frisch, mit Aleppo-Pistazien und viel Liebe gemacht.</p>
+          <div class="hero__actions">
             <a class="btn btn--gold" href="karte.html">Zur Speisekarte</a>
-            <a class="btn btn--ghost" href="#besuch">Schustergasse 14</a>
+            <a class="btn btn--ghost" href="#besuch">So finden Sie uns</a>
           </div>
+          <p class="vitrine__hint"><span aria-hidden="true">↓</span> Scrollen, um die Theke entlangzugehen</p>
         </div>
 
-        <div class="grid-head" id="gridHead">
-          <p class="eyebrow">Acht Klassiker unserer Theke</p>
-          <h2>Ein Stern, <em>acht Geschichten.</em></h2>
+        <div class="vitrine__caption" id="vCaption" aria-live="polite">
+          <button class="vbtn" id="vPrev" aria-label="Vorheriges Tablett">‹</button>
+          <div class="vitrine__label">
+            <span class="vitrine__count" id="vCount">01 / 08</span>
+            <span class="vitrine__ar" id="vAr" lang="ar" dir="rtl"></span>
+            <strong id="vName"></strong>
+            <small id="vDe"></small>
+          </div>
+          <button class="vbtn" id="vNext" aria-label="Nächstes Tablett">›</button>
+          <button class="vitrine__taste" id="vTaste">Probieren</button>
         </div>
 
-        <div class="star" id="star"></div>
-        <div class="star-core" id="starCore" aria-hidden="true">
-          <img src="assets/img/logo-bag.png" alt="">
-        </div>
+        <aside class="vitrine__detail" id="vDetail" hidden aria-labelledby="vdName">
+          <button class="vitrine__close" id="vClose" aria-label="Schließen">×</button>
+          <span class="vitrine__ar" id="vdAr" lang="ar" dir="rtl"></span>
+          <h2 id="vdName"></h2>
+          <p class="vitrine__de" id="vdDe"></p>
+          <p id="vdText"></p>
+          <ul class="ingredients" id="vdIng"></ul>
+          <div class="vitrine__links">
+            <a href="#lexikon" id="vdLex">Im Lexikon ansehen</a>
+            <a href="karte.html#suesses">Preise in der Speisekarte</a>
+          </div>
+        </aside>
 
-        <p class="scroll-cue" id="scrollCue">Scrollen – der Stern öffnet sich <span aria-hidden="true">↓</span></p>
+        <div class="vitrine__fallback" id="vFallback" hidden></div>
       </div>
     </section>
 
