@@ -468,47 +468,12 @@ export async function initVitrine({ canvas, trays, onTray, onSelect, onHover, re
     },
   };
 
-  // ── Echte, freigestellte Fotos (aus der Speisekarte) als Tablett-Inhalt ──
-  const loadCutout = (src) => new Promise((res, rej) => new THREE.TextureLoader().load(src, (tx) => {
-    tx.colorSpace = THREE.SRGBColorSpace; tx.anisotropy = 8; res(tx);
-  }, undefined, rej));
-  const cutouts = await Promise.all(trays.map((t) => (t.photo ? loadCutout(t.photo).catch(() => null) : null)));
-  const shadowTex = canvasTex(256, (g, s) => {
-    const grd = g.createRadialGradient(s / 2, s / 2, 0, s / 2, s / 2, s / 2);
-    grd.addColorStop(0, 'rgba(70,45,20,.42)'); grd.addColorStop(1, 'rgba(70,45,20,0)');
-    g.fillStyle = grd; g.fillRect(0, 0, s, s);
-  });
-  // stand = Foto schräg von vorn (steht leicht zurückgelehnt), flat = Foto von oben (liegt flach)
-  function photoTray(tray, tex, mode) {
-    const aspect = tex.image.height / tex.image.width;
-    const mat = new THREE.MeshBasicMaterial({ map: tex, transparent: true, alphaTest: 0.04, toneMapped: false, side: THREE.DoubleSide });
-    const g = new THREE.Group();
-    const sh = new THREE.Mesh(new THREE.PlaneGeometry(1.9, 1.0), new THREE.MeshBasicMaterial({ map: shadowTex, transparent: true, depthWrite: false }));
-    sh.rotation.x = -Math.PI / 2; sh.position.y = 0.003;
-    if (mode === 'flat') {
-      const w = 1.5, m = new THREE.Mesh(new THREE.PlaneGeometry(w, w * aspect), mat);
-      m.rotation.x = -Math.PI / 2; m.position.y = 0.012; g.add(m);
-      sh.scale.set(0.95, 1.6, 1);
-    } else {
-      const w = Math.min(1.35, 0.78 / aspect), h = w * aspect, tilt = 0.55;   // passt unter die Glasscheibe
-      const m = new THREE.Mesh(new THREE.PlaneGeometry(w, h), mat);
-      m.rotation.x = -tilt; m.position.set(0, (h / 2) * Math.cos(tilt), -(h / 2) * Math.sin(tilt) + 0.15);
-      g.add(m);
-      sh.position.z = 0.1;
-    }
-    tray.add(sh);
-    const pc = piece(tray, g, 0, 0, 0, 0);
-    pc.traverse((o) => { o.castShadow = false; });
-    pc.userData.photo = mode;
-  }
-
   await document.fonts?.ready;
   trays.forEach((t, i) => {
     const tray = new THREE.Group();
     tray.userData.index = i;
     tray.position.set(i * SPACING, 0, -0.05);
-    if (t.photo && cutouts[i]) photoTray(tray, cutouts[i], t.photoMode || 'stand');
-    else (BUILDERS[t.model] || BUILDERS.baklava)(tray);
+    (BUILDERS[t.model] || BUILDERS.baklava)(tray);
     scene.add(tray);
     trayGroups.push(tray);
     // Namensschild
@@ -521,7 +486,7 @@ export async function initVitrine({ canvas, trays, onTray, onSelect, onHover, re
     stand.position.set(i * SPACING - 0.78, 0.05, 0.79);
     scene.add(stand);
     // Echtes Foto aus dem Laden: gerahmt auf einer kleinen Staffelei hinter dem Tablett
-    if (t.img && !(t.photo && cutouts[i])) {
+    if (t.img) {
       const photo = new THREE.TextureLoader().load(t.img);
       photo.colorSpace = THREE.SRGBColorSpace;
       photo.anisotropy = 8;
@@ -607,14 +572,8 @@ export async function initVitrine({ canvas, trays, onTray, onSelect, onHover, re
       if (!small) tmp.x -= 0.28;
       selected.parent.worldToLocal(tmp);
       selected.position.lerp(tmp, 0.12);
-      if (selected.userData.photo) {          // Foto: sanft hin- und herschwenken statt drehen
-        selected.rotation.y = Math.sin(t * 1.1) * (reducedMotion ? 0.05 : 0.3);
-        const rx = selected.userData.photo === 'flat' ? 1.0 : 0.12;
-        selected.rotation.x += (rx - selected.rotation.x) * 0.1;
-      } else {
-        selected.rotation.y += dt * (reducedMotion ? 0.2 : 0.9);
-        selected.rotation.x += (0.35 - selected.rotation.x) * 0.1;
-      }
+      selected.rotation.y += dt * (reducedMotion ? 0.2 : 0.9);
+      selected.rotation.x += (0.35 - selected.rotation.x) * 0.1;
       const s = pieceScale(selected) * (small ? 0.6 : 1);
       selected.scale.lerp(tmp.set(s, s, s), 0.12);
     }
@@ -625,7 +584,6 @@ export async function initVitrine({ canvas, trays, onTray, onSelect, onHover, re
   // Zielgröße eines Stücks beim Vorzeigen (große Künefe kleiner skalieren)
   const box = new THREE.Box3();
   function pieceScale(p) {
-    if (p.userData.photo) return 0.62;
     if (p.userData.scaleCache) return p.userData.scaleCache;
     const sc = p.scale.clone(); p.scale.set(1, 1, 1);
     box.setFromObject(p); p.scale.copy(sc);
