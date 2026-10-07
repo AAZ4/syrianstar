@@ -451,6 +451,23 @@ export async function initVitrine({ canvas, trays, onTray, onSelect, onHover, re
     const stand = new THREE.Mesh(new THREE.BoxGeometry(0.05, 0.1, 0.02), brass);
     stand.position.set(i * SPACING - 0.78, 0.05, 0.79);
     scene.add(stand);
+    // Echtes Foto aus dem Laden: gerahmt auf einer kleinen Staffelei hinter dem Tablett
+    if (t.img) {
+      const photo = new THREE.TextureLoader().load(t.img);
+      photo.colorSpace = THREE.SRGBColorSpace;
+      photo.anisotropy = 8;
+      const frame = new THREE.Group();
+      const back = new THREE.Mesh(new THREE.BoxGeometry(0.74, 0.57, 0.025), brass);
+      const pic = new THREE.Mesh(new THREE.PlaneGeometry(0.68, 0.51), new THREE.MeshStandardMaterial({ map: photo, roughness: 0.55 }));
+      pic.position.z = 0.0135;
+      const leg = new THREE.Mesh(new THREE.BoxGeometry(0.025, 0.42, 0.02), brass);
+      leg.position.set(0, -0.12, -0.12); leg.rotation.x = 0.5;
+      frame.add(back, pic, leg);
+      frame.position.set(i * SPACING + 0.55, 0.33, -0.66);
+      frame.rotation.set(-0.22, -0.25, 0);
+      frame.traverse((o) => { if (o.isMesh) o.castShadow = true; });
+      scene.add(frame);
+    }
   });
 
   // ── Zustand ──
