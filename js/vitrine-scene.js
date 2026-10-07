@@ -230,6 +230,40 @@ export async function initVitrine({ canvas, trays, onTray, onSelect, onHover, re
   };
   const pistBits = new THREE.DodecahedronGeometry(0.018, 0);
 
+  // ── Echte Oberflächen aus den Ladenfotos ──
+  // Ausschnitte (Pixel im 1200×900-Foto) werden direkt als Textur auf die Modelle gelegt.
+  const photoTex = async (src, [sx, sy, sw, sh], repeat = [1, 1]) => {
+    const img = new Image();
+    img.src = src;
+    await img.decode();
+    const k = img.naturalWidth / 1200;
+    const c = document.createElement('canvas');
+    c.width = c.height = 512;
+    c.getContext('2d').drawImage(img, sx * k, sy * k, sw * k, sh * k, 0, 0, 512, 512);
+    const t = new THREE.CanvasTexture(c);
+    t.colorSpace = THREE.SRGBColorSpace;
+    t.wrapS = t.wrapT = THREE.RepeatWrapping;
+    t.repeat.set(...repeat);
+    t.anisotropy = 8;
+    return t;
+  };
+  try {
+    const [mabTop, mabSide, barTop, halSkin, halEnd] = await Promise.all([
+      photoTex('assets/img/mabrumeh.jpg', [648, 455, 255, 290]),          // Schnittfläche mit ganzen Pistazien
+      photoTex('assets/img/mabrumeh.jpg', [840, 330, 320, 120], [3, 1]),   // gedrehte Teigfäden
+      photoTex('assets/img/barazek.jpg', [72, 528, 312, 290]),            // Keks mit Sesam
+      photoTex('assets/img/halawet-el-jibn.jpg', [985, 600, 110, 42], [3, 1]), // Teighülle mit Pistazienstaub
+      photoTex('assets/img/halawet-el-jibn.jpg', [772, 468, 96, 100]),    // Ashta-Füllung
+    ]);
+    M.mabTop = new THREE.MeshPhysicalMaterial({ map: mabTop, roughness: 0.5, clearcoat: 0.4 });
+    M.mabSide = new THREE.MeshPhysicalMaterial({ map: mabSide, roughness: 0.5, clearcoat: 0.6, clearcoatRoughness: 0.25 });
+    M.sesame = new THREE.MeshStandardMaterial({ map: barTop, roughness: 0.55 });
+    M.dough.map = halSkin; M.dough.color.set(0xffffff); M.dough.needsUpdate = true;
+    M.ashta.map = halEnd; M.ashta.color.set(0xffffff); M.ashta.needsUpdate = true;
+  } catch (err) {
+    console.warn('Fotos für Texturen nicht geladen:', err);
+  }
+
   // ── Tabletts ──
   const pieceRoots = [];          // alle anklickbaren Stücke
   const trayGroups = [];
@@ -319,7 +353,7 @@ export async function initVitrine({ canvas, trays, onTray, onSelect, onHover, re
       const geo = new THREE.CylinderGeometry(0.11, 0.11, 0.11, 28);
       grid(6, 4, 1.62, 1.0, (x, z) => {
         const g = new THREE.Group();
-        const m = new THREE.Mesh(geo, [M.fiber, M.pist, M.fiber]); m.position.y = 0.055; g.add(m);
+        const m = new THREE.Mesh(geo, [M.mabSide || M.fiber, M.mabTop || M.pist, M.fiber]); m.position.y = 0.055; g.add(m);
         piece(tray, g, x + rand(-0.01, 0.01), z + rand(-0.01, 0.01), rand(0, TAU));
       });
     },
