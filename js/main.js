@@ -7,14 +7,18 @@ const COLORS = ['saff', 'pist', 'rose', 'cream'];
 
 // ─── Hero: Die Vitrine (3D-Theke) ────────────────────────────
 // Reihenfolge der Tabletts von links nach rechts
+// photo = freigestelltes Foto aus der Speisekarte (stand = schräg, flat = von oben), sonst 3D-Modell
+const CUT = 'assets/img/karte/';
 const TRAYS = [
-  { id: 'knafeh-nabulsi', name: 'Künefe', model: 'kunefe' },
-  { id: 'baklava', model: 'baklava' },
+  { id: 'knafeh-nabulsi', name: 'Künefe', model: 'kunefe', photo: `${CUT}kunefe.webp` },
+  { id: 'baklava', model: 'baklava', photo: `${CUT}baklava-tablett.webp`, photoMode: 'flat' },
   { id: 'mabrumeh', model: 'mabrumeh' },
-  { id: 'halawet', model: 'halawet' },
+  { id: 'halawet', model: 'halawet' },   // Foto im PDF seitlich abgeschnitten → 3D-Modell mit Foto-Oberfläche
+  { id: 'shaabiyat', model: 'baklava', photo: `${CUT}shaabiyat.webp` },
   { id: 'nest', model: 'nest' },
-  { id: 'barazek', model: 'barazek' },
-  { id: 'maamoul', model: 'maamoul' },
+  { id: 'barazek', model: 'barazek', photo: `${CUT}barazek-teller.webp` },
+  { id: 'maamoul', model: 'maamoul', photo: `${CUT}maamoul.webp` },
+  { id: 'ghraybeh', model: 'maamoul', photo: `${CUT}ghraybeh.webp` },
   { id: 'ballourieh', model: 'ballourieh' },
 ].map((t) => ({ ...SWEETS.find((s) => s.id === t.id), ...t }));
 
@@ -128,8 +132,10 @@ function renderSweets() {
     <article class="sweet reveal" id="sweet-${s.id}" data-group="${s.group}" style="--d:${(i % 4) * 60}ms">
       <button class="sweet__inner" aria-label="${esc(s.name)} – Details anzeigen" aria-pressed="false">
         <div class="sweet__face sweet__front">
-          <div class="sweet__art c-${COLORS[i % COLORS.length]} ${s.img ? 'has-img' : ''}">
-            ${s.img ? `<img src="${s.img}" alt="${esc(s.name)}" loading="lazy">` : illustration(s.shape, i)}
+          <div class="sweet__art c-${COLORS[i % COLORS.length]} ${s.img ? 'has-img' : s.cut ? 'is-cut' : ''}">
+            ${s.img ? `<img src="${s.img}" alt="${esc(s.name)}" loading="lazy">`
+              : s.cut ? `<img src="${s.cut}" alt="${esc(s.name)}" loading="lazy">`
+              : illustration(s.shape, i)}
             ${s.star ? '<span class="badge">Spezialität</span>' : ''}
           </div>
           <div class="sweet__meta">

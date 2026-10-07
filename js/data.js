@@ -51,7 +51,7 @@ export const SWEETS = [
     de: 'Der Klassiker in Rauten',
     text: 'Dutzende hauchdünne Filo-Teigblätter, jede mit Butter bestrichen, geschichtet mit gemahlenen Pistazien und nach dem Backen mit Sirup übergossen.',
     zutaten: ['Filo-Teig', 'Pistazien', 'Butter', 'Zuckersirup'],
-    price: '40 € / kg · Cashew 36 €', allergens: 'A,B,C', shape: 'diamond',
+    price: '40 € / kg · Cashew 36 €', allergens: 'A,B,C', cut: 'assets/img/karte/baklava-tablett.webp', shape: 'diamond',
   },
   {
     id: 'kolwshkor', ar: 'كُل واشكُر', name: 'Kol w Shkor', group: 'pistazie',
@@ -100,7 +100,7 @@ export const SWEETS = [
     de: 'Blätterteig-Taschen mit Creme',
     text: 'Große, blättrige Dreiecke aus Filo-Teig mit cremiger Ashta-Füllung, bestreut mit Pistazien. Ein Stück reicht – fast.',
     zutaten: ['Filo-Teig', 'Ashta-Creme', 'Butter', 'Pistazien', 'Sirup'],
-    price: '3 € / Stück', allergens: 'A,B,C', shape: 'triangle',
+    price: '3 € / Stück', allergens: 'A,B,C', cut: 'assets/img/karte/shaabiyat.webp', shape: 'triangle',
   },
   {
     id: 'halawet', ar: 'حلاوة الجبن', name: 'Halawet el Jibn', group: 'sahne',
@@ -135,7 +135,7 @@ export const SWEETS = [
     de: 'Künefe nach Art von Nablus – fein',
     text: 'Fein geriebener Teig, darunter eine Schicht schmelzender Käse. Warm aus dem Blech, mit Sirup übergossen – die Fäden ziehen lang.',
     zutaten: ['feiner Kadayif', 'Nabulsi-/Akkawi-Käse', 'Butterschmalz', 'Sirup', 'Pistazien'],
-    price: '24 € / kg', allergens: 'A,B,C', shape: 'round', star: true,
+    price: '24 € / kg', allergens: 'A,B,C', cut: 'assets/img/karte/kunefe.webp', shape: 'round', star: true,
   },
   {
     id: 'knafeh-narein', ar: 'كنافة بين نارين', name: 'Knafeh bin Narein', group: 'sahne',
@@ -156,14 +156,14 @@ export const SWEETS = [
     de: 'Gefülltes Grießgebäck',
     text: 'In kunstvoll geschnitzten Holzformen gepresstes Grießgebäck, gefüllt mit Datteln, Pistazien oder Walnüssen – das Festgebäck zu Eid.',
     zutaten: ['Grieß', 'Butter', 'Datteln / Pistazien / Walnüsse', 'Rosenwasser'],
-    price: '18 € / kg', allergens: 'A,B,C', shape: 'maamoul',
+    price: '18 € / kg', allergens: 'A,B,C', cut: 'assets/img/karte/maamoul.webp', shape: 'maamoul',
   },
   {
     id: 'ghraybeh', ar: 'غريبة', name: 'Ghraybeh', group: 'trocken',
     de: 'Zartes Buttergebäck',
     text: 'Mürbes Gebäck aus Butter, Zucker und Mehl, das auf der Zunge zerfällt – gekrönt mit einer Pistazie. Auch mit Sahne erhältlich.',
     zutaten: ['Butterschmalz', 'Puderzucker', 'Mehl', 'Pistazie'],
-    price: '18 € / kg', allergens: 'A,B,C', shape: 'ring',
+    price: '18 € / kg', allergens: 'A,B,C', cut: 'assets/img/karte/ghraybeh.webp', shape: 'ring',
   },
 ];
 
