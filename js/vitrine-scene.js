@@ -6,6 +6,7 @@
 import * as THREE from 'three';
 import { RoomEnvironment } from 'three/addons/environments/RoomEnvironment.js';
 import { mergeGeometries } from 'three/addons/utils/BufferGeometryUtils.js';
+import { GLTFLoader } from 'three/addons/loaders/GLTFLoader.js';
 
 const TAU = Math.PI * 2;
 const rand = (a, b) => a + Math.random() * (b - a);
@@ -468,12 +469,54 @@ export async function initVitrine({ canvas, trays, onTray, onSelect, onHover, re
     },
   };
 
+  // ── Echte 3D-Modelle (GLB, mit Higgsfield aus euren Fotos erzeugt) ──
+  const gltf = new GLTFLoader();
+  const glbs = await Promise.all(trays.map((t) => (t.glb
+    ? gltf.loadAsync(t.glb).then((g) => g.scene).catch((err) => { console.warn('GLB nicht geladen:', t.glb, err); return null; })
+    : null)));
+
+  // Modell ausrichten, auf Zielgröße skalieren und mit der Unterseite auf y = 0 setzen
+  function prepareGlb(src, { rot = [0, 0, 0], size = 0.22, squash = 1 }) {
+    const inner = src.clone(true);
+    inner.rotation.set(...rot);
+    const holder = new THREE.Group();
+    holder.add(inner);
+    holder.updateMatrixWorld(true);
+    const box = new THREE.Box3().setFromObject(holder);
+    const dim = box.getSize(new THREE.Vector3());
+    const k = size / Math.max(dim.x, dim.z);
+    inner.scale.set(k, k * squash, k);   // squash < 1 macht z. B. Kekse flacher
+    holder.updateMatrixWorld(true);
+    box.setFromObject(holder);
+    const c = box.getCenter(new THREE.Vector3());
+    inner.position.set(-c.x, -box.min.y, -c.z);
+    inner.traverse((o) => {
+      if (o.isMesh && o.material) {
+        o.material.envMapIntensity = 0.6;
+        if (o.material.map) o.material.map.anisotropy = 8;
+      }
+    });
+    return holder;
+  }
+
+  // Tablett mit vielen Exemplaren eines echten Modells füllen (Geometrie wird geteilt)
+  function glbTray(tray, src, t) {
+    tray.add(makeTray('rect', t.glbTray === 'silver' ? silver : brass));
+    const proto = prepareGlb(src, t.glbFit || {});
+    const [cols, rows] = t.glbGrid || [6, 4];
+    grid(cols, rows, 1.62, 1.0, (x, z) => {
+      const g = proto.clone(true);
+      piece(tray, g, x + rand(-0.01, 0.01), z + rand(-0.01, 0.01), (t.glbSpin ?? true) ? rand(0, TAU) : rand(-0.12, 0.12));
+    });
+  }
+
   await document.fonts?.ready;
   trays.forEach((t, i) => {
     const tray = new THREE.Group();
     tray.userData.index = i;
     tray.position.set(i * SPACING, 0, -0.05);
-    (BUILDERS[t.model] || BUILDERS.baklava)(tray);
+    if (t.glb && glbs[i]) glbTray(tray, glbs[i], t);
+    else (BUILDERS[t.model] || BUILDERS.baklava)(tray);
     scene.add(tray);
     trayGroups.push(tray);
     // Namensschild

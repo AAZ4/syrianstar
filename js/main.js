@@ -10,10 +10,10 @@ const COLORS = ['saff', 'pist', 'rose', 'cream'];
 const TRAYS = [
   { id: 'knafeh-nabulsi', name: 'Künefe', model: 'kunefe' },
   { id: 'baklava', model: 'baklava' },
-  { id: 'mabrumeh', model: 'mabrumeh' },
-  { id: 'halawet', model: 'halawet' },
+  { id: 'mabrumeh', model: 'mabrumeh', glb: 'assets/models/mabrumeh.glb', glbFit: { rot: [-Math.PI / 2, 0, 0], size: 0.23 } },
+  { id: 'halawet', model: 'halawet', glb: 'assets/models/halawet.glb', glbTray: 'silver', glbFit: { size: 0.36 }, glbGrid: [4, 6], glbSpin: false },
   { id: 'nest', model: 'nest' },
-  { id: 'barazek', model: 'barazek' },
+  { id: 'barazek', model: 'barazek', glb: 'assets/models/barazek.glb', glbFit: { size: 0.22, squash: 0.32 } },
   { id: 'maamoul', model: 'maamoul' },
   { id: 'ballourieh', model: 'ballourieh' },
 ].map((t) => ({ ...SWEETS.find((s) => s.id === t.id), ...t }));
