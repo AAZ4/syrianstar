@@ -6,15 +6,16 @@ const reducedMotion = matchMedia('(prefers-reduced-motion: reduce)').matches;
 const COLORS = ['saff', 'pist', 'rose', 'cream'];
 
 // ─── Hero: Die Vitrine (3D-Theke) ────────────────────────────
-// Reihenfolge der Tabletts von links nach rechts
+// Reihenfolge der Tabletts von links nach rechts.
+// glb = echtes 3D-Modell (Higgsfield), sonst nachgebautes Modell (model)
 const TRAYS = [
-  { id: 'knafeh-nabulsi', name: 'Künefe', model: 'kunefe' },
-  { id: 'baklava', model: 'baklava' },
+  { id: 'knafeh-nabulsi', name: 'Künefe', model: 'kunefe', glb: 'assets/models/kunefe.glb', glbFit: { size: 0.3, squash: 0.8, tint: 0xb4e2ea }, glbGrid: [5, 3], glbSpin: false },
+  { id: 'baklava', model: 'baklava', glb: 'assets/models/baklava.glb', glbTray: 'silver', glbFit: { size: 0.27 }, glbGrid: [5, 4] },
   { id: 'mabrumeh', model: 'mabrumeh', glb: 'assets/models/mabrumeh.glb', glbFit: { rot: [-Math.PI / 2, 0, 0], size: 0.23 } },
   { id: 'halawet', model: 'halawet', glb: 'assets/models/halawet.glb', glbTray: 'silver', glbFit: { size: 0.36 }, glbGrid: [4, 6], glbSpin: false },
   { id: 'nest', model: 'nest' },
   { id: 'barazek', model: 'barazek', glb: 'assets/models/barazek.glb', glbFit: { size: 0.22, squash: 0.32 } },
-  { id: 'maamoul', model: 'maamoul' },
+  { id: 'maamoul', model: 'maamoul', glb: 'assets/models/maamoul.glb', glbTray: 'silver', glbFit: { size: 0.21 } },
   { id: 'ballourieh', model: 'ballourieh' },
 ].map((t) => ({ ...SWEETS.find((s) => s.id === t.id), ...t }));
 

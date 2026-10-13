@@ -471,12 +471,9 @@ export async function initVitrine({ canvas, trays, onTray, onSelect, onHover, re
 
   // ── Echte 3D-Modelle (GLB, mit Higgsfield aus euren Fotos erzeugt) ──
   const gltf = new GLTFLoader();
-  const glbs = await Promise.all(trays.map((t) => (t.glb
-    ? gltf.loadAsync(t.glb).then((g) => g.scene).catch((err) => { console.warn('GLB nicht geladen:', t.glb, err); return null; })
-    : null)));
 
   // Modell ausrichten, auf Zielgröße skalieren und mit der Unterseite auf y = 0 setzen
-  function prepareGlb(src, { rot = [0, 0, 0], size = 0.22, squash = 1 }) {
+  function prepareGlb(src, { rot = [0, 0, 0], size = 0.22, squash = 1, tint = null }) {
     const inner = src.clone(true);
     inner.rotation.set(...rot);
     const holder = new THREE.Group();
@@ -493,6 +490,7 @@ export async function initVitrine({ canvas, trays, onTray, onSelect, onHover, re
     inner.traverse((o) => {
       if (o.isMesh && o.material) {
         o.material.envMapIntensity = 0.6;
+        if (tint) { o.material = o.material.clone(); o.material.color.multiply(new THREE.Color(tint)); }   // Farbstich korrigieren
         if (o.material.map) o.material.map.anisotropy = 8;
       }
     });
@@ -515,8 +513,7 @@ export async function initVitrine({ canvas, trays, onTray, onSelect, onHover, re
     const tray = new THREE.Group();
     tray.userData.index = i;
     tray.position.set(i * SPACING, 0, -0.05);
-    if (t.glb && glbs[i]) glbTray(tray, glbs[i], t);
-    else (BUILDERS[t.model] || BUILDERS.baklava)(tray);
+    (BUILDERS[t.model] || BUILDERS.baklava)(tray);   // sofort sichtbar; echtes Modell wird unten nachgeladen
     scene.add(tray);
     trayGroups.push(tray);
     // Namensschild
@@ -528,6 +525,19 @@ export async function initVitrine({ canvas, trays, onTray, onSelect, onHover, re
     const stand = new THREE.Mesh(new THREE.BoxGeometry(0.05, 0.1, 0.02), brass);
     stand.position.set(i * SPACING - 0.78, 0.05, 0.79);
     scene.add(stand);
+  });
+
+  // Echte 3D-Modelle im Hintergrund nachladen und das Tablett dann austauschen,
+  // damit die Theke nicht auf alle Dateien warten muss
+  trays.forEach((t, i) => {
+    if (!t.glb) return;
+    gltf.loadAsync(t.glb).then((g) => {
+      const tray = trayGroups[i];
+      if (selected?.userData.tray === i) deselect();
+      for (let k = pieceRoots.length - 1; k >= 0; k--) if (pieceRoots[k].userData.tray === i) pieceRoots.splice(k, 1);
+      for (const c of [...tray.children]) tray.remove(c);
+      glbTray(tray, g.scene, t);
+    }).catch((err) => console.warn('GLB nicht geladen, nachgebautes Modell bleibt:', t.glb, err));
   });
 
   // ── Zustand ──
