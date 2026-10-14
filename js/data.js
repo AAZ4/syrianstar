@@ -135,7 +135,7 @@ export const SWEETS = [
     de: 'Künefe nach Art von Nablus – fein',
     text: 'Fein geriebener Teig, darunter eine Schicht schmelzender Käse. Warm aus dem Blech, mit Sirup übergossen – die Fäden ziehen lang.',
     zutaten: ['feiner Kadayif', 'Nabulsi-/Akkawi-Käse', 'Butterschmalz', 'Sirup', 'Pistazien'],
-    price: '24 € / kg', allergens: 'A,B,C', shape: 'round', star: true,
+    price: '24 € / kg', allergens: 'A,B,C', shape: 'round', star: true, img: 'assets/img/theke/kunefe-stueck.jpg',
   },
   {
     id: 'knafeh-narein', ar: 'كنافة بين نارين', name: 'Knafeh bin Narein', group: 'sahne',
