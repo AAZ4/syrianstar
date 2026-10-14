@@ -17,8 +17,8 @@ const TRAYS = [
       prices: [['Knafeh Nabulsi (fein)', '24 € / kg'], ['Knafeh bin Narein (grob)', '18 € / kg']],
       order: 'Hallo Syrian Star, ich möchte gerne Künefe bestellen:',
     } },
-  { id: 'baklava', model: 'baklava', glb: 'assets/models/baklava.glb', glbTray: 'silver', glbFit: { size: 0.27 }, glbGrid: [5, 4] },
-  { id: 'mabrumeh', model: 'mabrumeh', glb: 'assets/models/mabrumeh.glb', glbFit: { rot: [-Math.PI / 2, 0, 0], size: 0.23 } },
+  { id: 'baklava', model: 'photoFlat', photo: { src: 'assets/img/theke/baklava-tablett.jpg', crop: [75, 56, 1192, 800] } },
+  { id: 'mabrumeh', model: 'photoPyramid', photo: { src: 'assets/img/theke/mabrumeh-tablett.jpg', crop: [72, 52, 1192, 802], grid: [11, 8], levels: [[9, 6], [7, 4], [5, 2]] } },
   { id: 'halawet', model: 'halawet', glb: 'assets/models/halawet.glb', glbTray: 'silver', glbFit: { size: 0.36 }, glbGrid: [4, 6], glbSpin: false },
   { id: 'nest', model: 'nest' },
   { id: 'barazek', model: 'barazek', glb: 'assets/models/barazek.glb', glbFit: { size: 0.22, squash: 0.32 } },
@@ -113,6 +113,7 @@ async function initVitrine() {
   const showTray = (i) => {
     if (i !== 0) caption.classList.add('swiped');   // Wisch-Hinweis nach dem ersten Wechsel ausblenden
     current = i;
+    detail.hidden = true; stage.classList.remove('is-tasting');
     const t = TRAYS[i];
     $('#vCount').textContent = `${String(i + 1).padStart(2, '0')} / ${String(TRAYS.length).padStart(2, '0')}`;
     $('#vAr').textContent = t.ar;

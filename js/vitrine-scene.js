@@ -119,6 +119,80 @@ function labelTex(name, ar) {
   });
 }
 
+// ── Foto → Relief-Texturen (Farbe, Höhe, Normalen) für einen Bildausschnitt ──
+// crop = [x0, y0, x1, y1] in Pixeln des Originalfotos; green = wie stark Pistazien hervorstehen
+function reliefTextures(img, crop, { green = 0.9, lum = 0.3, size = 1024, hsize = 256, sharp = 6 } = {}) {
+  const [x0, y0, x1, y1] = crop;
+  const aspect = (x1 - x0) / (y1 - y0);
+  const W = aspect >= 1 ? size : Math.round(size * aspect), Hh = aspect >= 1 ? Math.round(size / aspect) : size;
+  const c = document.createElement('canvas'); c.width = W; c.height = Hh;
+  c.getContext('2d').drawImage(img, x0, y0, x1 - x0, y1 - y0, 0, 0, W, Hh);
+  const map = new THREE.CanvasTexture(c);
+  map.colorSpace = THREE.SRGBColorSpace; map.anisotropy = 8;
+
+  const hw = aspect >= 1 ? hsize : Math.round(hsize * aspect), hh = aspect >= 1 ? Math.round(hsize / aspect) : hsize;
+  const hc = document.createElement('canvas'); hc.width = hw; hc.height = hh;
+  const hx = hc.getContext('2d', { willReadFrequently: true });
+  hx.filter = 'blur(0.6px)';
+  hx.drawImage(c, 0, 0, hw, hh);
+  const d = hx.getImageData(0, 0, hw, hh).data;
+  const raw = new Float32Array(hw * hh);
+  for (let i = 0; i < hw * hh; i++) {
+    const r = d[i * 4], g = d[i * 4 + 1], b = d[i * 4 + 2];
+    raw[i] = lum * (0.3 * r + 0.59 * g + 0.11 * b) / 255 + green * Math.max(0, Math.min(1, (g - r * 0.85) / 40));
+  }
+  const at = (x, y) => raw[Math.min(hh - 1, Math.max(0, y)) * hw + Math.min(hw - 1, Math.max(0, x))];
+  const soft = new Float32Array(hw * hh);
+  for (let y = 0; y < hh; y++) for (let x = 0; x < hw; x++) {
+    let s = 0; for (let j = -1; j <= 1; j++) for (let k = -1; k <= 1; k++) s += at(x + k, y + j);
+    soft[y * hw + x] = s / 9;
+  }
+  const sat = (x, y) => soft[Math.min(hh - 1, Math.max(0, y)) * hw + Math.min(hw - 1, Math.max(0, x))];
+  const dc = document.createElement('canvas'); dc.width = hw; dc.height = hh;
+  const nc = document.createElement('canvas'); nc.width = hw; nc.height = hh;
+  const dd = dc.getContext('2d').createImageData(hw, hh), nd = nc.getContext('2d').createImageData(hw, hh);
+  for (let y = 0; y < hh; y++) for (let x = 0; x < hw; x++) {
+    const i = y * hw + x, v = Math.min(255, soft[i] * 255);
+    dd.data.set([v, v, v, 255], i * 4);
+    const ex = (sat(x + 1, y) - sat(x - 1, y)) * sharp, ey = (sat(x, y + 1) - sat(x, y - 1)) * sharp, l = Math.hypot(ex, ey, 1);
+    nd.data.set([(-ex / l * 0.5 + 0.5) * 255, (ey / l * 0.5 + 0.5) * 255, (1 / l * 0.5 + 0.5) * 255, 255], i * 4);
+  }
+  dc.getContext('2d').putImageData(dd, 0, 0);
+  nc.getContext('2d').putImageData(nd, 0, 0);
+  return { map, disp: new THREE.CanvasTexture(dc), normal: new THREE.CanvasTexture(nc) };
+}
+
+// Fläche mit Foto-Relief (liegt flach, Mitte auf y = 0)
+function reliefPlane(w, d, tex, { seg = 160, scale = 0.035 } = {}) {
+  const geo = new THREE.PlaneGeometry(w, d, seg, Math.max(8, Math.round(seg * d / w)));
+  geo.rotateX(-Math.PI / 2);
+  const mat = new THREE.MeshPhysicalMaterial({
+    map: tex.map, displacementMap: tex.disp, displacementScale: scale, displacementBias: -scale * 0.25,
+    normalMap: tex.normal, normalScale: new THREE.Vector2(1.6, 1.6),
+    roughness: 0.48, clearcoat: 0.45, clearcoatRoughness: 0.22, envMapIntensity: 0.35,
+  });
+  const m = new THREE.Mesh(geo, mat);
+  m.castShadow = m.receiveShadow = true;
+  return m;
+}
+
+// Seitenansicht einer Reihe Stücke (für Pyramiden-Stufen): je Stück eine gewölbte, faserige Seite
+function rowSideTexture(base = '#b8732a') {
+  return canvasTex(256, (c, n) => {
+    const grd = c.createLinearGradient(0, 0, n, 0);
+    grd.addColorStop(0, 'rgba(60,25,5,.55)'); grd.addColorStop(0.18, 'rgba(0,0,0,0)');
+    grd.addColorStop(0.5, 'rgba(255,220,150,.25)'); grd.addColorStop(0.82, 'rgba(0,0,0,0)'); grd.addColorStop(1, 'rgba(60,25,5,.55)');
+    c.fillStyle = base; c.fillRect(0, 0, n, n);
+    for (let i = 0; i < 900; i++) {
+      c.strokeStyle = Math.random() < 0.5 ? `rgba(240,170,80,${rand(0.3, 0.7)})` : `rgba(120,60,15,${rand(0.3, 0.6)})`;
+      c.lineWidth = rand(0.8, 2);
+      const x = rand(0, n), y = rand(0, n);
+      c.beginPath(); c.moveTo(x, y); c.lineTo(x + rand(-4, 4), y + rand(10, 30)); c.stroke();
+    }
+    c.fillStyle = grd; c.fillRect(0, 0, n, n);
+  });
+}
+
 // ── Szene ────────────────────────────────────────────────────
 export async function initVitrine({ canvas, trays, onTray, onSelect, onHover, reducedMotion = false }) {
   const N = trays.length;
@@ -318,6 +392,55 @@ export async function initVitrine({ canvas, trays, onTray, onSelect, onHover, re
 
   // Sorte → Geometrie
   const BUILDERS = {
+    // Flaches Tablett mit echtem Foto von oben (Relief aus dem Foto)
+    photoFlat(tray, t) {
+      tray.add(makeTray('rect', silver));
+      const W = 1.78, D = W * (t.photo.crop[3] - t.photo.crop[1]) / (t.photo.crop[2] - t.photo.crop[0]), KH = 0.05;
+      const g = new THREE.Group();
+      const sideMat = new THREE.MeshPhysicalMaterial({ map: rowSideTexture('#c98a3a'), roughness: 0.5, clearcoat: 0.5 });
+      const body = new THREE.Mesh(new THREE.BoxGeometry(W, KH, D), [sideMat, sideMat, new THREE.MeshBasicMaterial({ visible: false }), sideMat, sideMat, sideMat]);
+      body.position.y = 0.02 + KH / 2; body.castShadow = body.receiveShadow = true;
+      g.add(body);
+      const img = new Image();
+      img.onload = () => {
+        const top = reliefPlane(W, D, reliefTextures(img, t.photo.crop, t.photo.relief), { scale: 0.03 });
+        top.position.y = 0.02 + KH;
+        g.add(top);
+      };
+      img.src = t.photo.src;
+      const p = piece(tray, g, 0, 0, 0, 0);
+      p.userData.noLift = true;
+    },
+    // Stufen-Pyramide: jede Etage zeigt einen passenden Ausschnitt des Fotos (gleich große Stücke)
+    photoPyramid(tray, t) {
+      tray.add(makeTray('rect', silver));
+      const { crop, grid: [GC, GR], levels, cell = 0.165, step = 0.095 } = t.photo;
+      const cw = (crop[2] - crop[0]) / GC, ch = (crop[3] - crop[1]) / GR;   // Pixel pro Stück im Foto
+      const g = new THREE.Group();
+      const side = rowSideTexture();
+      const img = new Image();
+      img.onload = () => {
+        levels.forEach(([c, r], k) => {
+          const w = c * cell, d = r * cell, y0 = 0.02 + k * step;
+          // passender Ausschnitt: c × r Stücke aus der Fotomitte
+          const sx = crop[0] + ((GC - c) / 2) * cw, sy = crop[1] + ((GR - r) / 2) * ch;
+          const tex = reliefTextures(img, [sx, sy, sx + c * cw, sy + r * ch], t.photo.relief);
+          const sideX = side.clone(); sideX.repeat.set(c, 1); sideX.needsUpdate = true;
+          const sideZ = side.clone(); sideZ.repeat.set(r, 1); sideZ.needsUpdate = true;
+          const mx = new THREE.MeshPhysicalMaterial({ map: sideX, roughness: 0.5, clearcoat: 0.4 });
+          const mz = new THREE.MeshPhysicalMaterial({ map: sideZ, roughness: 0.5, clearcoat: 0.4 });
+          const hide = new THREE.MeshBasicMaterial({ visible: false });
+          const box = new THREE.Mesh(new THREE.BoxGeometry(w, step, d), [mz, mz, hide, hide, mx, mx]);
+          box.position.y = y0 + step / 2; box.castShadow = box.receiveShadow = true;
+          const top = reliefPlane(w, d, tex, { seg: 120, scale: 0.035 });
+          top.position.y = y0 + step;
+          g.add(box, top);
+        });
+      };
+      img.src = t.photo.src;
+      const p = piece(tray, g, 0, 0, 0, 0);
+      p.userData.noLift = true;
+    },
     // Ganzes rundes arabisches Knafeh-Blech (Siniyeh) mit Foto als Oberfläche.
     // Antippen hebt es nicht an – es öffnet das Stück-Fenster (noLift).
     blech(tray, t) {
