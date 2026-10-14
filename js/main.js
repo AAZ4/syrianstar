@@ -93,7 +93,7 @@ function initPieceModal() {
     if (!pieceModal.frames.length) return;
     drag = { x: e.clientX, start: pieceModal.idx };
     media.classList.add('is-dragging');
-    media.setPointerCapture(e.pointerId);
+    try { media.setPointerCapture(e.pointerId); } catch { /* z. B. bei simulierten Eingaben */ }
   });
   media.addEventListener('pointermove', (e) => {
     if (!drag) return;

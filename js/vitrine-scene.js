@@ -321,19 +321,109 @@ export async function initVitrine({ canvas, trays, onTray, onSelect, onHover, re
     // Ganzes rundes arabisches Knafeh-Blech (Siniyeh) mit Foto als Oberfläche.
     // Antippen hebt es nicht an – es öffnet das Stück-Fenster (noLift).
     blech(tray, t) {
-      const R = 0.95, H = 0.07;
-      const photo = new THREE.TextureLoader().load(t.blech);
-      photo.colorSpace = THREE.SRGBColorSpace;
-      photo.anisotropy = 8;
+      // Rundes Aluminiumblech mit schrägem Innenrand und gerolltem Rand
+      const R = 0.95, FLOOR = 0.012, KH = 0.05;                 // Blechradius, Bodenstärke, Künefe-Höhe
+      const RK = R - 0.075;                                      // Radius der Künefe (füllt das Blech)
       const g = new THREE.Group();
-      const top = new THREE.Mesh(
-        new THREE.CylinderGeometry(R, R, 0.01, 96),
-        [silver, new THREE.MeshPhysicalMaterial({ map: photo, roughness: 0.5, clearcoat: 0.5, clearcoatRoughness: 0.3 }), silver],
-      );
-      top.position.y = H - 0.005;
-      const wall = new THREE.Mesh(new THREE.CylinderGeometry(R + 0.01, R - 0.02, H, 96, 1, true), silver);
-      wall.position.y = H / 2;
-      g.add(top, wall);
+      const prof = [[0, 0], [R - 0.02, 0], [R, 0.006], [R + 0.03, KH + 0.022], [R + 0.042, KH + 0.03], [R + 0.03, KH + 0.036],
+        [R + 0.012, KH + 0.024], [RK + 0.012, FLOOR + 0.004], [RK, FLOOR], [0, FLOOR]].map(([x, y]) => new THREE.Vector2(x, y));
+      const pan = new THREE.Mesh(new THREE.LatheGeometry(prof, 128), new THREE.MeshStandardMaterial({ color: 0xd9dbdc, metalness: 0.9, roughness: 0.32 }));
+      pan.castShadow = pan.receiveShadow = true;
+      g.add(pan);
+
+      // Seitenkante der Künefe: Kruste – geschmolzener Käse – Kruste (sichtbar zwischen Künefe und Blechrand)
+      const sideTex = canvasTex(512, (c, n) => {
+        const bands = [[0, '#b8561a'], [0.3, '#d97a2a'], [0.42, '#f3e7c8'], [0.62, '#efe0bd'], [0.7, '#c86a22'], [1, '#9c4512']];
+        const grd = c.createLinearGradient(0, 0, 0, n);
+        bands.forEach(([o, col]) => grd.addColorStop(o, col));
+        c.fillStyle = grd; c.fillRect(0, 0, n, n);
+        for (let i = 0; i < 1800; i++) {                        // Teigfäden in den Krustenschichten
+          const y = Math.random() < 0.5 ? rand(0, 0.38) * n : rand(0.66, 1) * n;
+          c.strokeStyle = `rgba(${Math.random() < 0.5 ? '255,170,80' : '120,50,10'},${rand(0.25, 0.6)})`;
+          c.lineWidth = rand(0.6, 1.6);
+          c.beginPath(); c.moveTo(rand(0, n), y); c.lineTo(rand(0, n), y + rand(-6, 6)); c.stroke();
+        }
+      });
+      sideTex.repeat.set(10, 1);
+      const side = new THREE.Mesh(new THREE.CylinderGeometry(RK, RK, KH, 128, 1, true),
+        new THREE.MeshPhysicalMaterial({ map: sideTex, roughness: 0.55, clearcoat: 0.4 }));
+      side.position.y = FLOOR + KH / 2;
+      g.add(side);
+
+      // Oberfläche: Foto + daraus berechnetes Relief (Teigfäden, erhabener Pistazienring) + Sirup-Glanz
+      const SEG = lowPower ? 160 : 260;
+      const topGeo = new THREE.PlaneGeometry(RK * 2, RK * 2, SEG, SEG);
+      topGeo.rotateX(-Math.PI / 2);
+      const topMat = new THREE.MeshPhysicalMaterial({
+        roughness: 0.5, clearcoat: 0.45, clearcoatRoughness: 0.22, transparent: false, alphaTest: 0.5,
+        displacementScale: 0.05, displacementBias: -0.012, envMapIntensity: 0.35,
+      });
+      const top = new THREE.Mesh(topGeo, topMat);
+      top.position.y = FLOOR + KH;
+      top.castShadow = top.receiveShadow = true;
+      g.add(top);
+
+      // Kreisförmige Maske, damit die Ecken der Fläche verschwinden
+      topMat.alphaMap = canvasTex(256, (c, n) => {
+        c.fillStyle = '#000'; c.fillRect(0, 0, n, n);
+        c.fillStyle = '#fff'; c.beginPath(); c.arc(n / 2, n / 2, n / 2 - 1, 0, TAU); c.fill();
+      }, { srgb: false });
+
+      const img = new Image();
+      img.onload = () => {
+        const KF = 0.875;                                         // Anteil der Künefe am Foto-Durchmesser
+        const N = 1024, c = document.createElement('canvas');
+        c.width = c.height = N;
+        const ctx = c.getContext('2d', { willReadFrequently: true });
+        const sw = img.width * KF, sx = (img.width - sw) / 2;
+        ctx.drawImage(img, sx, sx, sw, sw, 0, 0, N, N);          // nur die Künefe, ohne gemalten Blechrand
+        const map = new THREE.CanvasTexture(c);
+        map.colorSpace = THREE.SRGBColorSpace; map.anisotropy = 8;
+
+        // Höhenbild: helle Fäden höher, grüne Pistazien deutlich erhaben
+        const H = 256, hc = document.createElement('canvas');
+        hc.width = hc.height = H;
+        const hx = hc.getContext('2d', { willReadFrequently: true });
+        hx.filter = 'blur(0.6px)';
+        hx.drawImage(c, 0, 0, H, H);
+        const px = hx.getImageData(0, 0, H, H), d = px.data;
+        const height = new Float32Array(H * H);
+        for (let i = 0; i < H * H; i++) {
+          const r = d[i * 4], gg = d[i * 4 + 1], b = d[i * 4 + 2];
+          const lum = (0.3 * r + 0.59 * gg + 0.11 * b) / 255;
+          const green = Math.max(0, Math.min(1, (gg - r * 0.85) / 40));
+          height[i] = 0.3 * lum + 0.9 * green;
+        }
+        // Pistazien-Bereich weich verbreitern (Häufchen statt einzelner Pixel)
+        const soft = new Float32Array(H * H);
+        for (let y = 1; y < H - 1; y++) for (let x = 1; x < H - 1; x++) {
+          let sum = 0;
+          for (let j = -1; j <= 1; j++) for (let k = -1; k <= 1; k++) sum += height[(y + j) * H + x + k];
+          soft[y * H + x] = sum / 9;
+        }
+        const disp = document.createElement('canvas'); disp.width = disp.height = H;
+        const dx = disp.getContext('2d'), dd = dx.createImageData(H, H);
+        for (let i = 0; i < H * H; i++) { const v = Math.min(255, soft[i] * 255); dd.data.set([v, v, v, 255], i * 4); }
+        dx.putImageData(dd, 0, 0);
+        // Normal Map aus dem Höhenbild (feine Fäden fangen das Licht)
+        const nc = document.createElement('canvas'); nc.width = nc.height = H;
+        const nx = nc.getContext('2d'), nd = nx.createImageData(H, H);
+        const at = (x, y) => soft[Math.min(H - 1, Math.max(0, y)) * H + Math.min(H - 1, Math.max(0, x))];
+        for (let y = 0; y < H; y++) for (let x = 0; x < H; x++) {
+          const ex = (at(x + 1, y) - at(x - 1, y)) * 6, ey = (at(x, y + 1) - at(x, y - 1)) * 6;
+          const l = Math.hypot(ex, ey, 1);
+          nd.data.set([(-ex / l * 0.5 + 0.5) * 255, (ey / l * 0.5 + 0.5) * 255, (1 / l * 0.5 + 0.5) * 255, 255], (y * H + x) * 4);
+        }
+        nx.putImageData(nd, 0, 0);
+
+        topMat.map = map;
+        topMat.displacementMap = new THREE.CanvasTexture(disp);
+        topMat.normalMap = new THREE.CanvasTexture(nc);
+        topMat.normalScale.set(1.8, 1.8);
+        topMat.needsUpdate = true;
+      };
+      img.src = t.blech;
+
       const p = piece(tray, g, 0, 0, 0, 0.002);
       p.userData.noLift = true;
     },
