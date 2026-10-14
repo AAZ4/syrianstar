@@ -318,6 +318,25 @@ export async function initVitrine({ canvas, trays, onTray, onSelect, onHover, re
 
   // Sorte → Geometrie
   const BUILDERS = {
+    // Ganzes rundes arabisches Knafeh-Blech (Siniyeh) mit Foto als Oberfläche.
+    // Antippen hebt es nicht an – es öffnet das Stück-Fenster (noLift).
+    blech(tray, t) {
+      const R = 0.95, H = 0.07;
+      const photo = new THREE.TextureLoader().load(t.blech);
+      photo.colorSpace = THREE.SRGBColorSpace;
+      photo.anisotropy = 8;
+      const g = new THREE.Group();
+      const top = new THREE.Mesh(
+        new THREE.CylinderGeometry(R, R, 0.01, 96),
+        [silver, new THREE.MeshPhysicalMaterial({ map: photo, roughness: 0.5, clearcoat: 0.5, clearcoatRoughness: 0.3 }), silver],
+      );
+      top.position.y = H - 0.005;
+      const wall = new THREE.Mesh(new THREE.CylinderGeometry(R + 0.01, R - 0.02, H, 96, 1, true), silver);
+      wall.position.y = H / 2;
+      g.add(top, wall);
+      const p = piece(tray, g, 0, 0, 0, 0.002);
+      p.userData.noLift = true;
+    },
     kunefe(tray) {
       const t = makeTray('round', brass); tray.add(t);
       const body = new THREE.Group();
@@ -513,7 +532,7 @@ export async function initVitrine({ canvas, trays, onTray, onSelect, onHover, re
     const tray = new THREE.Group();
     tray.userData.index = i;
     tray.position.set(i * SPACING, 0, -0.05);
-    (BUILDERS[t.model] || BUILDERS.baklava)(tray);   // sofort sichtbar; echtes Modell wird unten nachgeladen
+    (BUILDERS[t.model] || BUILDERS.baklava)(tray, t);   // sofort sichtbar; echtes Modell wird unten nachgeladen
     scene.add(tray);
     trayGroups.push(tray);
     // Namensschild
@@ -590,7 +609,7 @@ export async function initVitrine({ canvas, trays, onTray, onSelect, onHover, re
     // Hover-Effekt
     for (const p of pieceRoots) {
       if (p === selected) continue;
-      const want = p === hovered ? 1 : 0;
+      const want = p === hovered && !p.userData.noLift ? 1 : 0;
       p.userData.lift += (want - p.userData.lift) * 0.2;
       if (p.userData.lift > 0.001 || p.position.distanceToSquared(p.userData.home) > 1e-6 || Math.abs(p.scale.x - 1) > 1e-3) {
         p.position.lerp(p.userData.home, 0.2);
@@ -630,6 +649,7 @@ export async function initVitrine({ canvas, trays, onTray, onSelect, onHover, re
   }
 
   function select(p) {
+    if (p.userData.noLift) { deselect(); onSelect?.(p.userData.tray); return; }   // Blech bleibt liegen
     if (selected === p) return;
     if (selected) deselect();
     selected = p;

@@ -9,7 +9,14 @@ const COLORS = ['saff', 'pist', 'rose', 'cream'];
 // Reihenfolge der Tabletts von links nach rechts.
 // glb = echtes 3D-Modell (Higgsfield), sonst nachgebautes Modell (model)
 const TRAYS = [
-  { id: 'knafeh-nabulsi', name: 'Künefe', model: 'kunefe', glb: 'assets/models/kunefe.glb', glbFit: { size: 0.3, squash: 0.8, tint: 0xb4e2ea }, glbGrid: [5, 3], glbSpin: false },
+  // Ganzes Blech in der Theke; Antippen öffnet das Stück-Fenster (piece)
+  { id: 'knafeh-nabulsi', name: 'Künefe', model: 'blech', blech: 'assets/img/theke/kunefe-blech.jpg',
+    piece: {
+      image: 'assets/img/theke/kunefe-blech.jpg',      // wird durch Bild 2 (Stück auf Teller) ersetzt
+      spin: null,                                       // später: { dir: 'assets/spin/kunefe/', count: 72, ext: 'webp' }
+      prices: [['Knafeh Nabulsi (fein)', '24 € / kg'], ['Knafeh bin Narein (grob)', '18 € / kg']],
+      order: 'Hallo Syrian Star, ich möchte gerne Künefe bestellen:',
+    } },
   { id: 'baklava', model: 'baklava', glb: 'assets/models/baklava.glb', glbTray: 'silver', glbFit: { size: 0.27 }, glbGrid: [5, 4] },
   { id: 'mabrumeh', model: 'mabrumeh', glb: 'assets/models/mabrumeh.glb', glbFit: { rot: [-Math.PI / 2, 0, 0], size: 0.23 } },
   { id: 'halawet', model: 'halawet', glb: 'assets/models/halawet.glb', glbTray: 'silver', glbFit: { size: 0.36 }, glbGrid: [4, 6], glbSpin: false },
@@ -18,6 +25,85 @@ const TRAYS = [
   { id: 'maamoul', model: 'maamoul', glb: 'assets/models/maamoul.glb', glbTray: 'silver', glbFit: { size: 0.21 } },
   { id: 'ballourieh', model: 'ballourieh' },
 ].map((t) => ({ ...SWEETS.find((s) => s.id === t.id), ...t }));
+
+// ─── Stück-Fenster: einzelnes Stück groß, per Ziehen drehbar (Bildfolge aus einem 360°-Video) ───
+const pieceModal = { frames: [], idx: 0, raf: 0 };
+
+function openPiece(t) {
+  const m = $('#pieceModal'), img = $('#pmImg'), media = $('#pmMedia'), hint = $('#pmHint');
+  const P = t.piece;
+  $('#pmAr').textContent = t.ar;
+  $('#pmName').textContent = t.name;
+  $('#pmDe').textContent = t.de;
+  $('#pmText').textContent = t.text;
+  $('#pmPrices').innerHTML = (P.prices || []).map(([n, p]) => `<li><div><strong>${esc(n)}</strong></div><b>${esc(p)}</b></li>`).join('');
+  $('#pmOrder').href = `${SHOP.whatsapp}?text=${encodeURIComponent(P.order || `Hallo Syrian Star, ich möchte ${t.name} bestellen.`)}`;
+  img.alt = `${t.name} – einzelnes Stück`;
+
+  cancelAnimationFrame(pieceModal.raf);
+  pieceModal.frames = [];
+  if (P.spin) {
+    // Einzelbilder des 360°-Videos; Ziehen dreht, sonst langsame Eigendrehung
+    pieceModal.frames = Array.from({ length: P.spin.count }, (_, k) => `${P.spin.dir}${String(k).padStart(3, '0')}.${P.spin.ext || 'webp'}`);
+    pieceModal.frames.forEach((src) => { const pre = new Image(); pre.src = src; });
+    pieceModal.idx = 0;
+    img.src = pieceModal.frames[0];
+    hint.hidden = false;
+    let last = performance.now();
+    const spin = (now) => {
+      pieceModal.raf = requestAnimationFrame(spin);
+      if (media.classList.contains('is-dragging') || reducedMotion) { last = now; return; }
+      if (now - last > 90) { last = now; showFrame(pieceModal.idx + 1); }
+    };
+    pieceModal.raf = requestAnimationFrame(spin);
+  } else {
+    img.src = P.image;
+    hint.hidden = true;
+  }
+  m.hidden = false;
+  document.body.style.overflow = 'hidden';
+  $('#pmClose').focus();
+}
+
+function showFrame(i) {
+  const n = pieceModal.frames.length;
+  if (!n) return;
+  pieceModal.idx = ((i % n) + n) % n;
+  $('#pmImg').src = pieceModal.frames[pieceModal.idx];
+}
+
+function closePiece() {
+  cancelAnimationFrame(pieceModal.raf);
+  $('#pieceModal').hidden = true;
+  document.body.style.overflow = '';
+}
+
+function initPieceModal() {
+  const m = $('#pieceModal'), media = $('#pmMedia');
+  $('#pmClose').addEventListener('click', closePiece);
+  m.addEventListener('click', (e) => { if (e.target === m) closePiece(); });
+  addEventListener('keydown', (e) => {
+    if (m.hidden) return;
+    if (e.key === 'Escape') closePiece();
+    if (e.key === 'ArrowRight') showFrame(pieceModal.idx + 1);
+    if (e.key === 'ArrowLeft') showFrame(pieceModal.idx - 1);
+  });
+  let drag = null;
+  media.addEventListener('pointerdown', (e) => {
+    if (!pieceModal.frames.length) return;
+    drag = { x: e.clientX, start: pieceModal.idx };
+    media.classList.add('is-dragging');
+    media.setPointerCapture(e.pointerId);
+  });
+  media.addEventListener('pointermove', (e) => {
+    if (!drag) return;
+    const perFrame = (media.clientWidth / pieceModal.frames.length) * 1.2;   // einmal quer ≈ eine Umdrehung
+    showFrame(drag.start - Math.round((e.clientX - drag.x) / perFrame));
+  });
+  const end = () => { drag = null; media.classList.remove('is-dragging'); };
+  media.addEventListener('pointerup', end);
+  media.addEventListener('pointercancel', end);
+}
 
 async function initVitrine() {
   const section = $('#vitrine'), stage = $('#vitrineStage'), canvas = $('#vitrineCanvas');
@@ -38,6 +124,7 @@ async function initVitrine() {
   const showDetail = (i) => {
     if (i == null) { detail.hidden = true; stage.classList.remove('is-tasting'); return; }
     const t = TRAYS[i];
+    if (t.piece) { openPiece(t); return; }   // Blech: eigenes Stück-Fenster statt Info-Karte
     $('#vdAr').textContent = t.ar;
     $('#vdName').textContent = t.name;
     $('#vdDe').textContent = t.de;
@@ -185,4 +272,5 @@ renderGlossary();
 renderContact();
 initNav();
 initReveal();
+initPieceModal();
 initVitrine();

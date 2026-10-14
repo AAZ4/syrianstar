@@ -187,6 +187,28 @@ em { font-style: italic; color: var(--brass); }
   .vitrine__photo { width: calc(100% + 44px); margin: -22px -22px 14px; aspect-ratio: 2 / 1; }
 }
 
+/* ── Stück-Fenster ── */
+.piece-modal { position: fixed; inset: 0; z-index: 80; display: grid; place-items: center; padding: 16px; background: rgba(43, 33, 24, .45); backdrop-filter: blur(6px); animation: fadein .3s var(--ease); }
+@keyframes fadein { from { opacity: 0; } }
+.piece-modal__box { position: relative; width: min(980px, 100%); max-height: calc(100svh - 32px); overflow: auto; display: grid; grid-template-columns: 1.15fr 1fr; background: var(--cream); border: 1px solid var(--line); border-radius: 24px; box-shadow: 0 40px 80px -30px rgba(43, 33, 24, .6); animation: rise .45s var(--ease); }
+.piece-modal__media { position: relative; background: radial-gradient(80% 80% at 50% 45%, #fff, var(--paper-2)); min-height: 360px; display: grid; place-items: center; cursor: grab; touch-action: pan-y; user-select: none; }
+.piece-modal__media.is-dragging { cursor: grabbing; }
+.piece-modal__media img { width: 100%; height: 100%; max-height: 560px; object-fit: contain; padding: 18px; pointer-events: none; }
+.piece-modal__hint { position: absolute; left: 50%; bottom: 14px; translate: -50% 0; margin: 0; padding: 5px 12px; border-radius: 999px; background: rgba(255, 253, 248, .85); font-size: 12.5px; font-weight: 600; color: var(--ink-soft); }
+.piece-modal__info { padding: 34px 32px 30px; display: flex; flex-direction: column; }
+.piece-modal__info h2 { font: 700 44px/1 var(--f-display); margin: 4px 0 6px; }
+.piece-modal__info .vitrine__ar { font-size: 22px; color: var(--brass); margin-right: 44px; }
+.piece-modal__text { color: var(--ink-soft); font-size: 15px; margin: 0 0 18px; }
+.piece-modal__info .price-list { margin: 0 0 24px; }
+.piece-modal .vitrine__close { z-index: 2; }
+@media (max-width: 760px) {
+  .piece-modal { padding: 0; align-items: end; }
+  .piece-modal__box { grid-template-columns: 1fr; border-radius: 24px 24px 0 0; max-height: 92svh; }
+  .piece-modal__media { min-height: 0; aspect-ratio: 4 / 3; }
+  .piece-modal__info { padding: 22px 20px 26px; }
+  .piece-modal__info h2 { font-size: 34px; }
+}
+
 /* ── Laufband ── */
 .marquee { background: var(--walnut); color: var(--brass-2); overflow: hidden; border-block: 1px solid var(--brass); }
 .marquee__track { display: flex; width: max-content; animation: marquee 44s linear infinite; }

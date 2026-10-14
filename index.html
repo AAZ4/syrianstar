@@ -109,6 +109,28 @@
       </div>
     </section>
 
+    <!-- ═════ Stück-Fenster (öffnet sich beim Antippen eines Blechs) ═════ -->
+    <div class="piece-modal" id="pieceModal" hidden role="dialog" aria-modal="true" aria-labelledby="pmName">
+      <div class="piece-modal__box">
+        <button class="vitrine__close" id="pmClose" aria-label="Schließen">×</button>
+        <div class="piece-modal__media" id="pmMedia">
+          <img id="pmImg" alt="" draggable="false">
+          <p class="piece-modal__hint" id="pmHint" hidden><span aria-hidden="true">↔</span> Ziehen zum Drehen</p>
+        </div>
+        <div class="piece-modal__info">
+          <span class="vitrine__ar" id="pmAr" lang="ar" dir="rtl"></span>
+          <h2 id="pmName"></h2>
+          <p class="vitrine__de" id="pmDe"></p>
+          <p class="piece-modal__text" id="pmText"></p>
+          <ul class="price-list" id="pmPrices"></ul>
+          <div class="hero__actions">
+            <a class="btn btn--gold" id="pmOrder" target="_blank" rel="noopener">Per WhatsApp bestellen</a>
+            <a class="btn btn--ghost" href="tel:+4917661717073">Anrufen</a>
+          </div>
+        </div>
+      </div>
+    </div>
+
     <!-- ═════ Laufband ═════ -->
     <div class="marquee" aria-hidden="true">
       <div class="marquee__track">
