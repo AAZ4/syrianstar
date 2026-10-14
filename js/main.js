@@ -12,8 +12,8 @@ const TRAYS = [
   // Ganzes Blech in der Theke; Antippen öffnet das Stück-Fenster (piece)
   { id: 'knafeh-nabulsi', name: 'Künefe', model: 'blech', blech: 'assets/img/theke/kunefe-blech.jpg',
     piece: {
-      image: 'assets/img/theke/kunefe-blech.jpg',      // wird durch Bild 2 (Stück auf Teller) ersetzt
-      spin: null,                                       // später: { dir: 'assets/spin/kunefe/', count: 72, ext: 'webp' }
+      image: 'assets/spin/kunefe/000.webp',
+      spin: { dir: 'assets/spin/kunefe/', count: 60, ext: 'webp' },   // 360°-Drehung aus dem Kling-Video
       prices: [['Knafeh Nabulsi (fein)', '24 € / kg'], ['Knafeh bin Narein (grob)', '18 € / kg']],
       order: 'Hallo Syrian Star, ich möchte gerne Künefe bestellen:',
     } },
