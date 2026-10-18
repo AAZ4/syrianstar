@@ -133,7 +133,7 @@ async function initVitrine() {
     $('#vdIng').innerHTML = t.zutaten.map((z) => `<li>${esc(z)}</li>`).join('');
     const img = $('#vdImg');
     img.hidden = !t.img;
-    if (t.img) { img.src = t.img; img.alt = `${t.name} – Foto aus unserem Laden`; }
+    if (t.img) { img.src = t.img; img.alt = t.name; }
     $('#vdLex').onclick = (e) => { e.preventDefault(); api?.deselect(); openSweet(t.id); };
     detail.hidden = false;
     stage.classList.add('is-tasting');
