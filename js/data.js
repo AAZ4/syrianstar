@@ -134,8 +134,8 @@ export const SWEETS = [
   {
     id: 'knafeh-nabulsi', ar: 'كنافة نابلسية', name: 'Knafeh Nabulsi', group: 'sahne',
     de: 'Künefe nach Art von Nablus – fein',
-    text: 'Fein geriebener Teig, darunter eine Schicht schmelzender Käse. Warm aus dem Blech, mit Sirup übergossen – die Fäden ziehen lang.',
-    zutaten: ['feiner Kadayif', 'Nabulsi-/Akkawi-Käse', 'Butterschmalz', 'Sirup', 'Pistazien'],
+    text: 'Eine dünne Kruste aus fein gemahlenem, orange gebackenem Teig (Na‘ameh) auf einer dicken Schicht weißem Nabulsi-Käse. Im runden Blech gebacken, gestürzt, warm mit Sirup übergossen und mit Pistazien bestreut – der Käse zieht lange Fäden.',
+    zutaten: ['feiner Grieß-Teig (Na‘ameh)', 'Nabulsi-/Akkawi-Käse', 'Butterschmalz', 'Sirup', 'Pistazien'],
     price: '24 € / kg', allergens: 'A,B,C', shape: 'round', star: true, img: 'assets/img/teller/knafeh-nabulsi.jpg',
   },
   {
@@ -202,14 +202,14 @@ export const MENU = [
       { title: 'Mit Pistazien', note: 'pro kg', items: [
         ['Mabrumeh', '43 €', 'A,B,C'], ['Kol w Shkor', '40 €', 'A,B,C'], ['Baklava', '40 €', 'A,B,C'],
         ['Pistazienröllchen', '40 €', 'A,B,C'], ['Pistaziennest', '40 €', 'A,B,C'], ['Ballourieh', '40 €', 'A,B,C'],
-        ['Gemischtes (Pistazie & Cashew)', '38 €', 'A,B,C'],
+        ['Warbat mit Pistazien', '40 €', 'A,B,C'], ['Gemischtes (Pistazie & Cashew)', '38 €', 'A,B,C'],
       ]},
       { title: 'Mit Cashewkernen', note: 'pro kg', items: [
         ['Baklava (Cashew)', '36 €', 'A,B,C'], ['Cashew-Nest', '36 €', 'A,B,C'], ['Ballourieh (Cashew)', '36 €', 'A,B,C'],
       ]},
       { title: 'Mit Sahne & Käse', note: 'pro kg', items: [
         ['Shaabiyat (pro Stück)', '3 €', 'A,B,C'], ['Warbat', '18 €', 'A,B,C'], ['Warbat mit frischer Sahne', '24 €', 'A,B,C'],
-        ['Warbat (Pistazie)', '40 €', 'A,B,C'], ['Madlouka', '24 €', 'A,B,C'],
+        ['Madlouka', '24 €', 'A,B,C'],
         ['Halawet el Jibn', '18 €', 'A,B,C'], ['Halawet el Jibn mit frischer Sahne', '24 €', 'A,B,C'],
         ['Knafeh Nabulsi (fein)', '24 €', 'A,B,C'], ['Knafeh bin Narein (grob)', '18 €', 'A,B,C'],
         ['Knafeh mit Nüssen', '39 €', 'A,B,C'], ['Ghraybeh mit Sahne', '18 €', 'A,B,C'],

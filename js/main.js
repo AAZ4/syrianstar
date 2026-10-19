@@ -218,24 +218,45 @@ function renderSweets() {
   $$('[data-count-sweets]').forEach((el) => { el.textContent = SWEETS.length; });
   grid.innerHTML = SWEETS.map((s, i) => `
     <article class="sweet reveal" id="sweet-${s.id}" data-group="${s.group}" style="--d:${(i % 3) * 60}ms">
-      <button class="sweet__card" data-id="${s.id}" aria-label="${esc(s.name)} – mehr erfahren">
-        <span class="sweet__art c-${COLORS[i % COLORS.length]}">
-          ${s.img ? `<img src="${s.img}" alt="" loading="lazy">` : illustration(s.shape, i)}
-          ${s.star ? '<span class="badge">Spezialität</span>' : ''}
-        </span>
-        <span class="sweet__meta">
+      <div class="sweet__inner" role="button" tabindex="0" aria-pressed="false" aria-label="${esc(s.name)} – umdrehen">
+        <div class="sweet__face sweet__front">
+          <span class="sweet__art c-${COLORS[i % COLORS.length]}">
+            ${s.img ? `<img src="${s.img}" alt="" loading="lazy">` : illustration(s.shape, i)}
+            ${s.star ? '<span class="badge">Spezialität</span>' : ''}
+          </span>
+          <span class="sweet__meta">
+            <span class="sweet__ar" lang="ar" dir="rtl">${s.ar}</span>
+            <span class="sweet__name">${esc(s.name)}</span>
+            <span class="sweet__de">${esc(s.de)}</span>
+          </span>
+          <span class="sweet__flip" aria-hidden="true">↻</span>
+        </div>
+        <div class="sweet__face sweet__back">
           <span class="sweet__ar" lang="ar" dir="rtl">${s.ar}</span>
           <span class="sweet__name">${esc(s.name)}</span>
-          <span class="sweet__de">${esc(s.de)}</span>
-          <span class="ingredients">${s.zutaten.slice(0, 3).map((z) => `<span>${esc(z)}</span>`).join('')}</span>
-          <span class="sweet__more">Mehr erfahren <span aria-hidden="true">→</span></span>
-        </span>
-      </button>
+          <p>${esc(s.text)}</p>
+          <span class="ingredients">${s.zutaten.map((z) => `<span>${esc(z)}</span>`).join('')}</span>
+          <span class="sweet__foot">
+            <small>Allergene: ${s.allergens}</small>
+            <button class="sweet__order" data-id="${s.id}">Preise &amp; bestellen</button>
+          </span>
+        </div>
+      </div>
     </article>`).join('');
 
+  const flip = (inner) => {
+    const on = inner.parentElement.classList.toggle('flipped');
+    inner.setAttribute('aria-pressed', on);
+  };
   grid.addEventListener('click', (e) => {
-    const card = e.target.closest('.sweet__card');
-    if (card) openSweet(card.dataset.id);
+    const order = e.target.closest('.sweet__order');
+    if (order) { e.stopPropagation(); openSweet(order.dataset.id); return; }
+    const inner = e.target.closest('.sweet__inner');
+    if (inner) flip(inner);
+  });
+  grid.addEventListener('keydown', (e) => {
+    const inner = e.target.closest('.sweet__inner');
+    if (inner && e.target === inner && (e.key === 'Enter' || e.key === ' ')) { e.preventDefault(); flip(inner); }
   });
 
   const filter = $('#sweetFilter');
@@ -250,23 +271,31 @@ function renderSweets() {
   });
 }
 
-// ─── Künefe: das Stück baut sich Schicht für Schicht auf – der Schritt folgt direkt der Scrollposition ───
-function initBuild() {
-  const stage = $('#buildStage');
-  const steps = $$('.step');
-  let raf = 0;
-  const update = () => {
-    raf = 0;
-    const line = innerHeight * 0.6;   // ein Schritt gilt, sobald seine Oberkante über diese Linie kommt
-    let n = 1;
-    steps.forEach((st, k) => { if (st.getBoundingClientRect().top < line) n = k + 1; });
-    if (stage.dataset.step !== String(n)) {
-      stage.dataset.step = n;
-      steps.forEach((st, k) => st.classList.toggle('is-active', k === n - 1));
-    }
+// ─── Künefe: Punkte im Foto und Liste zeigen nacheinander die Schichten ───
+function initAnatomy() {
+  const root = $('#anatomy');
+  if (!root) return;
+  const dots = $$('.hotspot', root), layers = $$('.layer', root);
+  let i = 0, timer = 0, auto = !reducedMotion;
+  const show = (n) => {
+    i = n;
+    dots.forEach((d, k) => d.classList.toggle('on', k === n));
+    layers.forEach((l, k) => l.classList.toggle('on', k === n));
   };
-  addEventListener('scroll', () => { if (!raf) raf = requestAnimationFrame(update); }, { passive: true });
-  update();
+  const next = () => show((i + 1) % layers.length);
+  const pick = (e) => {
+    const el = e.target.closest('[data-i]');
+    if (!el) return;
+    auto = false; clearInterval(timer);   // wer selbst tippt, steuert ab jetzt selbst
+    show(+el.dataset.i);
+  };
+  root.addEventListener('click', pick);
+  layers.forEach((l) => l.addEventListener('mouseenter', pick));
+  new IntersectionObserver(([e]) => {
+    clearInterval(timer);
+    if (e.isIntersecting && auto) timer = setInterval(next, 3800);
+  }, { threshold: 0.4 }).observe(root);
+  show(0);
 }
 
 // ─── Schale zusammenstellen → WhatsApp-Nachricht ───
@@ -322,7 +351,7 @@ function renderContact() {
 }
 
 renderSweets();
-initBuild();
+initAnatomy();
 initSchale();
 renderGlossary();
 renderContact();

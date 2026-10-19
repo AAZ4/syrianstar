@@ -10,13 +10,13 @@ const GETRAENKE = MENU.find((m) => m.tab === 'Getränke');
 const PHOTO_OF = {
   'Gemischtes (Pistazie & Cashew)': 'baklava', 'Baklava (Cashew)': 'baklava', 'Cashew-Nest': 'nest',
   'Ballourieh (Cashew)': 'ballourieh', 'Shaabiyat (pro Stück)': 'shaabiyat', 'Warbat mit frischer Sahne': 'warbat',
-  'Halawet el Jibn mit frischer Sahne': 'halawet', 'Warbat (Pistazie)': 'warbat', 'Knafeh Nabulsi (fein)': 'knafeh-nabulsi',
+  'Halawet el Jibn mit frischer Sahne': 'halawet', 'Warbat mit Pistazien': 'warbat', 'Knafeh Nabulsi (fein)': 'knafeh-nabulsi',
   'Knafeh bin Narein (grob)': 'knafeh-narein', 'Knafeh mit Nüssen': 'knafeh-narein', 'Ghraybeh mit Sahne': 'ghraybeh',
 };
 const sweetFor = (name) => SWEETS.find((s) => s.id === PHOTO_OF[name] || s.name === name);
 // Cashew-Varianten bekommen eigene Fotos (sobald vorhanden) – bis dahin eine Zeichnung statt des Pistazienfotos
 const OWN_PHOTO = {
-  'Baklava (Cashew)': null, 'Cashew-Nest': null, 'Ballourieh (Cashew)': null,
+  'Baklava (Cashew)': null, 'Cashew-Nest': null, 'Ballourieh (Cashew)': null, 'Warbat mit Pistazien': null,
 };
 
 // Ein Gericht als Karte mit Foto, Name, Kurzbeschreibung und Preis
@@ -62,22 +62,36 @@ const CATEGORIES = [
   {
     id: 'torten', label: 'Torten',
     html: () => `
-      <div class="torten__grid">
-        <div class="torten__media reveal">
-          <img src="assets/img/torte.jpg" alt="Torte von Syrian Star" loading="lazy" width="1200" height="900">
-          <img src="assets/img/kuchen.jpg" alt="Kuchenstück" loading="lazy" width="1200" height="900">
+      <div class="cakes">
+        <div class="cakes__media reveal">
+          <img class="cakes__main" src="assets/img/torte.jpg" alt="Torte von Syrian Star" loading="lazy" width="1200" height="900">
+          <figure class="cakes__slice">
+            <img src="assets/img/kuchen.jpg" alt="Stück Kuchen" loading="lazy" width="1200" height="900">
+            <figcaption>Stück Kuchen <b>${esc(CAKES.find((c) => c[0] === 'Stück Kuchen')?.[1] || '')}</b></figcaption>
+          </figure>
         </div>
-        <div class="torten__text reveal">
-          <p class="eyebrow">Kuchen &amp; Torten</p>
+        <div class="cakes__text reveal">
+          <p class="eyebrow">Kuchen &amp; Torten <span lang="ar" dir="rtl">كاتو</span></p>
           <h2 class="section__title">Für Ihren <em>besonderen Tag.</em></h2>
-          <p>Unsere Torten gibt es in verschiedenen Größen – ideal für Geburtstage, Feiern und besondere Anlässe. Sprechen Sie uns an, wir beraten Sie gern.</p>
-          <ul class="price-list">
-            ${CAKES.map(([n, p]) => `<li><div><strong>${esc(n)}${sup('A,B,D')}</strong></div><b>${esc(p)}</b></li>`).join('')}
-          </ul>
+          <p class="cakes__lead">Für Geburtstage, Feiern und besondere Anlässe – in drei Größen. Sprechen Sie uns an, wir beraten Sie gern.</p>
+          <div class="cake-sizes" role="radiogroup" aria-label="Größe der Torte">
+            ${CAKES.filter((c) => c[0].includes('Torte')).reverse().map(([n, p], k) => `
+              <button class="cake-size ${k === 1 ? 'on' : ''}" role="radio" aria-checked="${k === 1}" data-name="${esc(n.replace(/^\S+/, (w) => w.toLowerCase()))}" data-price="${esc(p)}">
+                <svg viewBox="0 0 60 60" aria-hidden="true"><circle cx="30" cy="30" r="${14 + k * 7}"/><circle cx="30" cy="30" r="${10 + k * 7}"/></svg>
+                <span>${esc(n.replace(' Torte', ''))}</span>
+                <b>${esc(p)}</b>
+              </button>`).join('')}
+          </div>
+          <ol class="how">
+            <li><b>1</b>Größe wählen</li>
+            <li><b>2</b>Wünsche per WhatsApp schicken</li>
+            <li><b>3</b>Abholen in der Schustergasse 14</li>
+          </ol>
           <div class="hero__actions">
-            <a class="btn btn--gold" href="${waLink(SHOP.phone, 'Hallo Syrian Star, ich möchte eine Torte bestellen.')}" target="_blank" rel="noopener">Torte per WhatsApp anfragen</a>
+            <a class="btn btn--gold" id="cakeOrder" target="_blank" rel="noopener">Torte per WhatsApp anfragen</a>
             <a class="btn btn--ghost" href="tel:+4917661717073">Anrufen</a>
           </div>
+          <p class="cakes__note">Allergene: A, B, D</p>
         </div>
       </div>`,
   },
@@ -116,7 +130,20 @@ function initCatNav() {
   $$('.cat').forEach(s => io.observe(s));
 }
 
+// Torten: Größe wählen → passende WhatsApp-Nachricht
+function initCakes() {
+  const sizes = $$('.cake-size'), order = $('#cakeOrder');
+  const pick = (b) => {
+    sizes.forEach((x) => { x.classList.toggle('on', x === b); x.setAttribute('aria-checked', x === b); });
+    order.href = waLink(SHOP.phone, `Hallo Syrian Star, ich möchte gerne eine ${b.dataset.name} (${b.dataset.price}) bestellen. Meine Wünsche: `);
+    order.textContent = `Torte anfragen · ${b.dataset.price}`;
+  };
+  sizes.forEach((b) => b.addEventListener('click', () => pick(b)));
+  pick(sizes.find((b) => b.classList.contains('on')) || sizes[0]);
+}
+
 render();
+initCakes();
 initNav();
 initReveal();
 initCatNav();
