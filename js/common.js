@@ -1,4 +1,11 @@
 // Gemeinsame Helfer für alle Seiten
+// WhatsApp-Link mit fertiger Nachricht. Am Handy direkt die App (whatsapp://),
+// am Computer die wa.me-Seite – die Zwischenseite wird in manchen Handy-Browsern blockiert.
+const MOBILE = /Android|iPhone|iPad|iPod/i.test(navigator.userAgent);
+export const waLink = (phone, text) => MOBILE
+  ? `whatsapp://send?phone=${phone}&text=${encodeURIComponent(text)}`
+  : `https://wa.me/${phone}?text=${encodeURIComponent(text)}`;
+
 export const $ = (s, el = document) => el.querySelector(s);
 export const $$ = (s, el = document) => [...el.querySelectorAll(s)];
 export const esc = (s) => String(s).replace(/[&<>"]/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c]));

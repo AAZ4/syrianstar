@@ -1,5 +1,6 @@
-import { ALLERGENS, MENU, CAKES, SWEETS } from './data.js';
-import { $, $$, esc, initNav, initReveal } from './common.js';
+import { ALLERGENS, MENU, CAKES, SWEETS, SHOP } from './data.js';
+import { $, $$, esc, initNav, initReveal, waLink } from './common.js';
+import { illustration } from './illustrations.js';
 
 const sup = (a) => (a ? `<sup>${a}</sup>` : '');
 const SUESSES = MENU.find((m) => m.tab === 'Süßes');
@@ -9,17 +10,23 @@ const GETRAENKE = MENU.find((m) => m.tab === 'Getränke');
 const PHOTO_OF = {
   'Gemischtes (Pistazie & Cashew)': 'baklava', 'Baklava (Cashew)': 'baklava', 'Cashew-Nest': 'nest',
   'Ballourieh (Cashew)': 'ballourieh', 'Shaabiyat (pro Stück)': 'shaabiyat', 'Warbat mit frischer Sahne': 'warbat',
-  'Halawet el Jibn mit frischer Sahne': 'halawet', 'Knafeh Nabulsi (fein)': 'knafeh-nabulsi',
+  'Halawet el Jibn mit frischer Sahne': 'halawet', 'Warbat (Pistazie)': 'warbat', 'Knafeh Nabulsi (fein)': 'knafeh-nabulsi',
   'Knafeh bin Narein (grob)': 'knafeh-narein', 'Knafeh mit Nüssen': 'knafeh-narein', 'Ghraybeh mit Sahne': 'ghraybeh',
 };
 const sweetFor = (name) => SWEETS.find((s) => s.id === PHOTO_OF[name] || s.name === name);
+// Cashew-Varianten bekommen eigene Fotos (sobald vorhanden) – bis dahin eine Zeichnung statt des Pistazienfotos
+const OWN_PHOTO = {
+  'Baklava (Cashew)': null, 'Cashew-Nest': null, 'Ballourieh (Cashew)': null,
+};
 
 // Ein Gericht als Karte mit Foto, Name, Kurzbeschreibung und Preis
 const dish = ([name, price, allergens], i) => {
   const s = sweetFor(name);
+  const img = name in OWN_PHOTO ? OWN_PHOTO[name] : s?.img;
+  const media = img ? `<img src="${img}" alt="" loading="lazy" width="900" height="900">` : s ? illustration(s.shape, i) : '';
   return `
     <li class="dish reveal" style="--d:${(i % 3) * 60}ms">
-      <span class="dish__img">${s?.img ? `<img src="${s.img}" alt="" loading="lazy" width="900" height="900">` : ''}</span>
+      <span class="dish__img ${img ? '' : 'is-drawn c-saff'}">${media}</span>
       <span class="dish__body">
         ${s ? `<span class="dish__ar" lang="ar" dir="rtl">${s.ar}</span>` : ''}
         <strong>${esc(name)}${sup(allergens)}</strong>
@@ -39,8 +46,8 @@ const menuBlocks = (sections) => `
       </div>`).join('')}
   </div>`;
 
-const SLUG = { 'Mit Pistazien': 'pistazie', 'Mit Cashewkernen': 'cashew', 'Mit Sahne & Käse': 'sahne', 'Orientalisches Trockengebäck': 'trocken' };
-const LABEL = { pistazie: 'Pistazie', cashew: 'Cashew', sahne: 'Sahne & Käse', trocken: 'Trockengebäck' };
+const SLUG = { 'Mit Pistazien': 'pistazie', 'Mit Cashewkernen': 'cashew', 'Mit Sahne & Käse': 'sahne', 'Mit Grieß': 'griess', 'Orientalisches Trockengebäck': 'trocken' };
+const LABEL = { pistazie: 'Pistazie', cashew: 'Cashew', sahne: 'Sahne & Käse', griess: 'Grieß', trocken: 'Trockengebäck' };
 
 const CATEGORIES = [
   ...SUESSES.sections.map((sec) => ({
@@ -68,7 +75,7 @@ const CATEGORIES = [
             ${CAKES.map(([n, p]) => `<li><div><strong>${esc(n)}${sup('A,B,D')}</strong></div><b>${esc(p)}</b></li>`).join('')}
           </ul>
           <div class="hero__actions">
-            <a class="btn btn--gold" href="https://wa.me/4917661717073?text=Hallo%20Syrian%20Star%2C%20ich%20m%C3%B6chte%20eine%20Torte%20bestellen." target="_blank" rel="noopener">Torte per WhatsApp anfragen</a>
+            <a class="btn btn--gold" href="${waLink(SHOP.phone, 'Hallo Syrian Star, ich möchte eine Torte bestellen.')}" target="_blank" rel="noopener">Torte per WhatsApp anfragen</a>
             <a class="btn btn--ghost" href="tel:+4917661717073">Anrufen</a>
           </div>
         </div>

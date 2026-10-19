@@ -12,6 +12,7 @@ export const SHOP = {
   phone: '+49 176 61717073',
   phoneHref: 'tel:+4917661717073',
   whatsapp: 'https://wa.me/4917661717073',
+  phone: '4917661717073',
   email: 'syrianstar07@gmail.com',
   maps: 'https://www.google.com/maps/search/?api=1&query=Syrian+Star+Schustergasse+14+64283+Darmstadt',
   social: {
@@ -82,7 +83,7 @@ export const SWEETS = [
     price: '40 € / kg · Cashew 36 €', allergens: 'A,B,C', shape: 'slab', img: 'assets/img/teller/ballourieh.jpg',
   },
   {
-    id: 'harisseh', ar: 'هريسة', name: 'Harisseh', group: 'pistazie',
+    id: 'harisseh', ar: 'هريسة', name: 'Harisseh', group: 'griess',
     de: 'Saftiger Grießkuchen',
     text: 'Grieß, Joghurt und Butter werden im Blech gebacken, in Rauten geschnitten und mit Sirup getränkt – außen karamellig, innen saftig.',
     zutaten: ['Grieß', 'Joghurt', 'Butter', 'Pistazien', 'Zuckersirup'],
@@ -117,14 +118,14 @@ export const SWEETS = [
     price: '24 € / kg', allergens: 'A,B,C', shape: 'square',
   },
   {
-    id: 'namoura', ar: 'نمورة', name: 'Namoura', group: 'sahne',
+    id: 'namoura', ar: 'نمورة', name: 'Namoura', group: 'griess',
     de: 'Grießschnitte in Sirup',
     text: 'Goldgelb gebackener Grießkuchen, mit Sirup getränkt und mit Mandel oder Pistazie gekrönt – weich, süß, leicht körnig.',
     zutaten: ['Grieß', 'Joghurt', 'Butter', 'Nüsse', 'Zuckersirup'],
     price: '18 € / kg', allergens: 'A,B,C', shape: 'square', img: 'assets/img/teller/namoura.jpg',
   },
   {
-    id: 'maamoulmad', ar: 'معمول مد', name: 'Maamoul Mad', group: 'sahne',
+    id: 'maamoulmad', ar: 'معمول مد', name: 'Maamoul Mad', group: 'griess',
     de: 'Maamoul vom Blech',
     text: 'Die Blech-Variante des Maamoul: zwei Schichten buttriger Grießteig mit Füllung, gebacken und in Stücke geschnitten.',
     zutaten: ['Grieß', 'Butter', 'Füllung (Creme / Nüsse)', 'Puderzucker'],
@@ -171,6 +172,7 @@ export const SWEET_GROUPS = [
   { id: 'alle', label: 'Alle' },
   { id: 'pistazie', label: 'Mit Pistazien & Cashew' },
   { id: 'sahne', label: 'Mit Sahne & Käse' },
+  { id: 'griess', label: 'Mit Grieß' },
   { id: 'trocken', label: 'Trockengebäck' },
 ];
 
@@ -200,17 +202,20 @@ export const MENU = [
       { title: 'Mit Pistazien', note: 'pro kg', items: [
         ['Mabrumeh', '43 €', 'A,B,C'], ['Kol w Shkor', '40 €', 'A,B,C'], ['Baklava', '40 €', 'A,B,C'],
         ['Pistazienröllchen', '40 €', 'A,B,C'], ['Pistaziennest', '40 €', 'A,B,C'], ['Ballourieh', '40 €', 'A,B,C'],
-        ['Warbat', '40 €', 'A,B,C'], ['Harisseh', '18 €', 'A,B,C'], ['Gemischtes (Pistazie & Cashew)', '38 €', 'A,B,C'],
+        ['Gemischtes (Pistazie & Cashew)', '38 €', 'A,B,C'],
       ]},
       { title: 'Mit Cashewkernen', note: 'pro kg', items: [
         ['Baklava (Cashew)', '36 €', 'A,B,C'], ['Cashew-Nest', '36 €', 'A,B,C'], ['Ballourieh (Cashew)', '36 €', 'A,B,C'],
       ]},
       { title: 'Mit Sahne & Käse', note: 'pro kg', items: [
         ['Shaabiyat (pro Stück)', '3 €', 'A,B,C'], ['Warbat', '18 €', 'A,B,C'], ['Warbat mit frischer Sahne', '24 €', 'A,B,C'],
-        ['Maamoul Mad', '18 €', 'A,B,C'], ['Madlouka', '24 €', 'A,B,C'], ['Namoura', '18 €', 'A,B,C'],
+        ['Warbat (Pistazie)', '40 €', 'A,B,C'], ['Madlouka', '24 €', 'A,B,C'],
         ['Halawet el Jibn', '18 €', 'A,B,C'], ['Halawet el Jibn mit frischer Sahne', '24 €', 'A,B,C'],
         ['Knafeh Nabulsi (fein)', '24 €', 'A,B,C'], ['Knafeh bin Narein (grob)', '18 €', 'A,B,C'],
         ['Knafeh mit Nüssen', '39 €', 'A,B,C'], ['Ghraybeh mit Sahne', '18 €', 'A,B,C'],
+      ]},
+      { title: 'Mit Grieß', note: 'pro kg', items: [
+        ['Harisseh', '18 €', 'A,B,C'], ['Namoura', '18 €', 'A,B,C'], ['Maamoul Mad', '18 €', 'A,B,C'],
       ]},
       { title: 'Orientalisches Trockengebäck', note: 'pro kg', items: [
         ['Barazek', '18 €', 'A,B,C,E'], ['Maamoul', '18 €', 'A,B,C'], ['Ghraybeh', '18 €', 'A,B,C'],

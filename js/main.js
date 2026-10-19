@@ -1,5 +1,5 @@
 import { SHOP, SWEETS, SWEET_GROUPS, GLOSSARY } from './data.js';
-import { $, $$, esc, initNav, initReveal } from './common.js';
+import { $, $$, esc, initNav, initReveal, waLink } from './common.js';
 import { illustration } from './illustrations.js';
 
 const reducedMotion = matchMedia('(prefers-reduced-motion: reduce)').matches;
@@ -39,7 +39,7 @@ function openPiece(t) {
   $('#pmIng').innerHTML = (t.zutaten || []).map((z) => `<span>${esc(z)}</span>`).join('');
   $('#pmAll').textContent = t.allergens ? `Allergene: ${t.allergens} – Erklärung in der Speisekarte` : '';
   $('#pmPrices').innerHTML = (P.prices || []).map(([n, p]) => `<li><div><strong>${esc(n)}</strong></div><b>${esc(p)}</b></li>`).join('');
-  $('#pmOrder').href = `${SHOP.whatsapp}?text=${encodeURIComponent(P.order || `Hallo Syrian Star, ich möchte ${t.name} bestellen.`)}`;
+  $('#pmOrder').href = waLink(SHOP.phone, P.order || `Hallo Syrian Star, ich möchte ${t.name} bestellen.`);
   img.alt = `${t.name} – einzelnes Stück`;
 
   cancelAnimationFrame(pieceModal.raf);
@@ -250,17 +250,23 @@ function renderSweets() {
   });
 }
 
-// ─── Künefe: das Stück baut sich Schicht für Schicht auf, je nachdem welcher Schritt gerade in der Mitte ist ───
+// ─── Künefe: das Stück baut sich Schicht für Schicht auf – der Schritt folgt direkt der Scrollposition ───
 function initBuild() {
   const stage = $('#buildStage');
   const steps = $$('.step');
-  const io = new IntersectionObserver((entries) => entries.forEach((e) => {
-    if (!e.isIntersecting) return;
-    stage.dataset.step = e.target.dataset.step;
-    steps.forEach((st) => st.classList.toggle('is-active', st === e.target));
-  }), { rootMargin: '-45% 0px -45% 0px' });
-  steps.forEach((st) => io.observe(st));
-  steps[0].classList.add('is-active');
+  let raf = 0;
+  const update = () => {
+    raf = 0;
+    const line = innerHeight * 0.6;   // ein Schritt gilt, sobald seine Oberkante über diese Linie kommt
+    let n = 1;
+    steps.forEach((st, k) => { if (st.getBoundingClientRect().top < line) n = k + 1; });
+    if (stage.dataset.step !== String(n)) {
+      stage.dataset.step = n;
+      steps.forEach((st, k) => st.classList.toggle('is-active', k === n - 1));
+    }
+  };
+  addEventListener('scroll', () => { if (!raf) raf = requestAnimationFrame(update); }, { passive: true });
+  update();
 }
 
 // ─── Schale zusammenstellen → WhatsApp-Nachricht ───
@@ -281,7 +287,7 @@ function initSchale() {
       ? list.map((s) => `<span class="box__item">${s.img ? `<img src="${s.img}" alt="">` : ''}${esc(s.name)}</span>`).join('')
       : '<span class="box__empty">Noch leer – tippen Sie auf Ihre Lieblingssorten.</span>';
     const text = `Hallo Syrian Star, ich möchte gerne eine gemischte Schale (${size}) vorbestellen mit: ${list.map((s) => s.name).join(', ')}.`;
-    order.href = list.length ? `${SHOP.whatsapp}?text=${encodeURIComponent(text)}` : '';
+    order.href = list.length ? waLink(SHOP.phone, text) : '';
     order.setAttribute('aria-disabled', !list.length);
     order.textContent = list.length ? `${size} mit ${list.length} ${list.length === 1 ? 'Sorte' : 'Sorten'} vorbestellen` : 'Per WhatsApp vorbestellen';
   };
