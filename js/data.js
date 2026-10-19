@@ -58,7 +58,7 @@ export const SWEETS = [
     de: '„Iss und sag Danke“',
     text: 'Kleine, knusprige Teig-Schälchen aus Filo, randvoll gefüllt mit Pistazien – so gut, dass man sich nach jedem Bissen bedankt.',
     zutaten: ['Filo-Teig', 'Pistazien', 'Butter', 'Zuckersirup'],
-    price: '40 € / kg', allergens: 'A,B,C', shape: 'cup',
+    price: '40 € / kg', allergens: 'A,B,C', shape: 'cup', img: 'assets/img/teller/kolwshkor.jpg',
   },
   {
     id: 'roellchen', ar: 'أصابع', name: 'Pistazienröllchen', group: 'pistazie',
@@ -100,7 +100,7 @@ export const SWEETS = [
     de: 'Blätterteig-Taschen mit Creme',
     text: 'Große, blättrige Dreiecke aus Filo-Teig mit cremiger Ashta-Füllung, bestreut mit Pistazien. Ein Stück reicht – fast.',
     zutaten: ['Filo-Teig', 'Ashta-Creme', 'Butter', 'Pistazien', 'Sirup'],
-    price: '3 € / Stück', allergens: 'A,B,C', shape: 'triangle',
+    price: '3 € / Stück', allergens: 'A,B,C', shape: 'triangle', img: 'assets/img/teller/shaabiyat.jpg',
   },
   {
     id: 'halawet', ar: 'حلاوة الجبن', name: 'Halawet el Jibn', group: 'sahne',
@@ -135,7 +135,7 @@ export const SWEETS = [
     de: 'Künefe nach Art von Nablus – fein',
     text: 'Fein geriebener Teig, darunter eine Schicht schmelzender Käse. Warm aus dem Blech, mit Sirup übergossen – die Fäden ziehen lang.',
     zutaten: ['feiner Kadayif', 'Nabulsi-/Akkawi-Käse', 'Butterschmalz', 'Sirup', 'Pistazien'],
-    price: '24 € / kg', allergens: 'A,B,C', shape: 'round', star: true, img: 'assets/img/theke/kunefe-stueck.jpg',
+    price: '24 € / kg', allergens: 'A,B,C', shape: 'round', star: true, img: 'assets/img/teller/knafeh-nabulsi.jpg',
   },
   {
     id: 'knafeh-narein', ar: 'كنافة بين نارين', name: 'Knafeh bin Narein', group: 'sahne',

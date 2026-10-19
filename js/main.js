@@ -12,7 +12,7 @@ const TRAYS = [
   // Ganzes Blech in der Theke; Antippen öffnet das Stück-Fenster (piece)
   { id: 'knafeh-nabulsi', name: 'Künefe', model: 'blech', blech: 'assets/img/theke/kunefe-blech.jpg',
     piece: {
-      image: 'assets/img/theke/kunefe-stueck.jpg',   // Standbild (das Drehvideo hat geruckelt)
+      image: 'assets/img/teller/knafeh-nabulsi.jpg',   // Standbild (das Drehvideo hat geruckelt)
       spin: null,                                     // Drehansicht weiterhin möglich: { dir, count, ext }
       prices: [['Knafeh Nabulsi (fein)', '24 € / kg'], ['Knafeh bin Narein (grob)', '18 € / kg']],
       order: 'Hallo Syrian Star, ich möchte gerne Künefe bestellen:',
