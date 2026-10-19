@@ -268,7 +268,35 @@ function renderSweets() {
     $$('.sweet', grid).forEach((card) => {
       card.hidden = !(b.dataset.g === 'alle' || card.dataset.group === b.dataset.g);
     });
+    grid.scrollTo({ left: 0 });
+    updateBar();
   });
+
+  // Handy: Karten liegen nebeneinander und werden gewischt – Leiste zeigt, wo man ist
+  const visible = () => $$('.sweet', grid).filter((c) => !c.hidden);
+  const current = () => {
+    const cards = visible();
+    const mid = grid.scrollLeft + grid.clientWidth / 2;
+    let k = 0, best = Infinity;   // Karte, deren Mitte der Bildschirmmitte am nächsten ist
+    cards.forEach((c, j) => { const d = Math.abs(c.offsetLeft + c.clientWidth / 2 - mid); if (d < best) { best = d; k = j; } });
+    return { cards, k };
+  };
+  function updateBar() {
+    const { cards, k } = current();
+    $('#sweetCount').textContent = `${k + 1} / ${cards.length}`;
+    $('#sweetProgress').style.width = `${((k + 1) / cards.length) * 100}%`;
+    $('#sweetPrev').disabled = k === 0;
+    $('#sweetNext').disabled = k === cards.length - 1;
+  }
+  const go = (d) => {
+    const { cards, k } = current();
+    const c = cards[Math.max(0, Math.min(cards.length - 1, k + d))];
+    grid.scrollTo({ left: c.offsetLeft - (grid.clientWidth - c.clientWidth) / 2, behavior: reducedMotion ? 'auto' : 'smooth' });
+  };
+  $('#sweetPrev').addEventListener('click', () => go(-1));
+  $('#sweetNext').addEventListener('click', () => go(1));
+  grid.addEventListener('scroll', updateBar, { passive: true });
+  updateBar();
 }
 
 // ─── Künefe: Punkte im Foto und Liste zeigen nacheinander die Schichten ───
