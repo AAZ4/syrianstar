@@ -1,9 +1,35 @@
-import { ALLERGENS, MENU, BAKERY, CAKES } from './data.js';
+import { ALLERGENS, MENU, CAKES, SWEETS } from './data.js';
 import { $, $$, esc, initNav, initReveal } from './common.js';
 
 const sup = (a) => (a ? `<sup>${a}</sup>` : '');
+const SUESSES = MENU.find((m) => m.tab === 'Süßes');
+const GETRAENKE = MENU.find((m) => m.tab === 'Getränke');
 
-// Punktlisten-Blöcke (Süßes, Getränke)
+// Welches Foto gehört zu welchem Eintrag der Karte (Varianten teilen sich das Bild der Grundsorte)
+const PHOTO_OF = {
+  'Gemischtes (Pistazie & Cashew)': 'baklava', 'Baklava (Cashew)': 'baklava', 'Cashew-Nest': 'nest',
+  'Ballourieh (Cashew)': 'ballourieh', 'Shaabiyat (pro Stück)': 'shaabiyat', 'Warbat mit frischer Sahne': 'warbat',
+  'Halawet el Jibn mit frischer Sahne': 'halawet', 'Knafeh Nabulsi (fein)': 'knafeh-nabulsi',
+  'Knafeh bin Narein (grob)': 'knafeh-narein', 'Knafeh mit Nüssen': 'knafeh-narein', 'Ghraybeh mit Sahne': 'ghraybeh',
+};
+const sweetFor = (name) => SWEETS.find((s) => s.id === PHOTO_OF[name] || s.name === name);
+
+// Ein Gericht als Karte mit Foto, Name, Kurzbeschreibung und Preis
+const dish = ([name, price, allergens], i) => {
+  const s = sweetFor(name);
+  return `
+    <li class="dish reveal" style="--d:${(i % 3) * 60}ms">
+      <span class="dish__img">${s?.img ? `<img src="${s.img}" alt="" loading="lazy" width="900" height="900">` : ''}</span>
+      <span class="dish__body">
+        ${s ? `<span class="dish__ar" lang="ar" dir="rtl">${s.ar}</span>` : ''}
+        <strong>${esc(name)}${sup(allergens)}</strong>
+        ${s ? `<span class="dish__de">${esc(s.de)}</span>` : ''}
+      </span>
+      <b class="dish__price">${esc(price)}</b>
+    </li>`;
+};
+
+// Punktlisten-Blöcke (Getränke)
 const menuBlocks = (sections) => `
   <div class="menu">
     ${sections.map(s => `
@@ -13,41 +39,18 @@ const menuBlocks = (sections) => `
       </div>`).join('')}
   </div>`;
 
-// Bild + Liste mit Beschreibung (Manakish, Fatayer, Pizza)
-const bakeBlock = (b, flip) => `
-  <article class="bake ${flip ? 'bake--flip' : ''}">
-    <figure class="bake__media reveal">
-      <img src="${b.img}" alt="${esc(b.title)}" loading="lazy" width="1200" height="900">
-      <figcaption lang="ar" dir="rtl">${b.ar}</figcaption>
-    </figure>
-    <div class="bake__text reveal">
-      <h2>${esc(b.title)}</h2>
-      <p class="section__lead">${esc(b.lead)}</p>
-      <ul class="price-list">
-        ${b.items.map(([n, d, p, a]) => `<li><div><strong>${esc(n)}${sup(a)}</strong><span>${esc(d)}</span></div><b>${esc(p)}</b></li>`).join('')}
-      </ul>
-    </div>
-  </article>`;
+const SLUG = { 'Mit Pistazien': 'pistazie', 'Mit Cashewkernen': 'cashew', 'Mit Sahne & Käse': 'sahne', 'Orientalisches Trockengebäck': 'trocken' };
+const LABEL = { pistazie: 'Pistazie', cashew: 'Cashew', sahne: 'Sahne & Käse', trocken: 'Trockengebäck' };
 
 const CATEGORIES = [
-  {
-    id: 'suesses', label: 'Süßes',
+  ...SUESSES.sections.map((sec) => ({
+    id: SLUG[sec.title], label: LABEL[SLUG[sec.title]],
     html: () => `
-      <header class="section__head reveal">
-        <p class="eyebrow"><span lang="ar" dir="rtl">حلويات شرقية</span></p>
-        <h2 class="section__title">Orientalische <em>Süßigkeiten.</em></h2>
-        <p class="section__lead">Frisch nach Gewicht – mit Aleppo-Pistazien, Cashew, Sahne oder als Trockengebäck. Gern stellen wir Ihnen eine gemischte Schale zusammen.</p>
+      <header class="dishes__head reveal">
+        <h2>${esc(sec.title)}</h2>
+        ${sec.note ? `<small>Preise ${esc(sec.note)}</small>` : ''}
       </header>
-      <div class="collage reveal">
-        <img src="assets/img/mabrumeh.jpg" alt="Mabrumeh mit Pistazien" loading="lazy">
-        <img src="assets/img/halawet-el-jibn.jpg" alt="Halawet el Jibn" loading="lazy">
-        <img src="assets/img/barazek.jpg" alt="Barazek" loading="lazy">
-      </div>
-      ${menuBlocks(MENU[0].sections)}`,
-  },
-  ...BAKERY.map((b, i) => ({
-    id: b.title.toLowerCase(), label: b.title,
-    html: () => bakeBlock(b, i % 2 === 1),
+      <ul class="dishes">${sec.items.map(dish).join('')}</ul>`,
   })),
   {
     id: 'torten', label: 'Torten',
@@ -78,7 +81,7 @@ const CATEGORIES = [
         <p class="eyebrow"><span lang="ar" dir="rtl">مشروبات</span></p>
         <h2 class="section__title">Dazu ein <em>Kaffee?</em></h2>
       </header>
-      ${menuBlocks(MENU[4].sections)}`,
+      ${menuBlocks(GETRAENKE.sections)}`,
   },
 ];
 
@@ -110,5 +113,6 @@ render();
 initNav();
 initReveal();
 initCatNav();
-// Direktlink (z. B. karte.html#pizza) nach dem Rendern anspringen
-if (location.hash) document.getElementById(location.hash.slice(1))?.scrollIntoView();
+// Direktlink (z. B. karte.html#torten) nach dem Rendern anspringen; alter Link #suesses → erste Sorte
+const target = location.hash === '#suesses' ? 'pistazie' : location.hash.slice(1);
+if (target) document.getElementById(target)?.scrollIntoView();

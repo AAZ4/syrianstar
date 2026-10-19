@@ -36,6 +36,8 @@ function openPiece(t) {
   $('#pmName').textContent = t.name;
   $('#pmDe').textContent = t.de;
   $('#pmText').textContent = t.text;
+  $('#pmIng').innerHTML = (t.zutaten || []).map((z) => `<span>${esc(z)}</span>`).join('');
+  $('#pmAll').textContent = t.allergens ? `Allergene: ${t.allergens} – Erklärung in der Speisekarte` : '';
   $('#pmPrices').innerHTML = (P.prices || []).map(([n, p]) => `<li><div><strong>${esc(n)}</strong></div><b>${esc(p)}</b></li>`).join('');
   $('#pmOrder').href = `${SHOP.whatsapp}?text=${encodeURIComponent(P.order || `Hallo Syrian Star, ich möchte ${t.name} bestellen.`)}`;
   img.alt = `${t.name} – einzelnes Stück`;
@@ -199,50 +201,41 @@ async function initVitrine() {
   new IntersectionObserver(([e]) => (e.isIntersecting ? api.start() : api.stop())).observe(section);
 }
 
+const pricesOf = (s) => s.price.split(' · ').map((part, k) => {
+  const m = part.match(/^(.*?)\s*(\d[\d,]*\s*€.*)$/);
+  return [k === 0 || !m?.[1] ? s.name : `${s.name} – ${m[1]}`, m ? m[2] : part];
+});
+
 function openSweet(id) {
-  const card = document.getElementById(`sweet-${id}`);
-  if (!card) return;
-  $('#sweetFilter .chip')?.click();
-  card.scrollIntoView({ behavior: reducedMotion ? 'auto' : 'smooth', block: 'center' });
-  setTimeout(() => {
-    card.classList.add('flipped');
-    card.querySelector('.sweet__inner')?.setAttribute('aria-pressed', 'true');
-  }, reducedMotion ? 0 : 650);
+  const s = SWEETS.find((x) => x.id === id);
+  if (!s) return;
+  openPiece({ ...s, piece: { image: s.img, prices: pricesOf(s) } });
 }
 
 // ─── Lexikon ─────────────────────────────────────────────────
 function renderSweets() {
   const grid = $('#sweetGrid');
+  $$('[data-count-sweets]').forEach((el) => { el.textContent = SWEETS.length; });
   grid.innerHTML = SWEETS.map((s, i) => `
-    <article class="sweet reveal" id="sweet-${s.id}" data-group="${s.group}" style="--d:${(i % 4) * 60}ms">
-      <button class="sweet__inner" aria-label="${esc(s.name)} – Details anzeigen" aria-pressed="false">
-        <div class="sweet__face sweet__front">
-          <div class="sweet__art c-${COLORS[i % COLORS.length]} ${s.img ? 'has-img' : ''}">
-            ${s.img ? `<img src="${s.img}" alt="${esc(s.name)}" loading="lazy">` : illustration(s.shape, i)}
-            ${s.star ? '<span class="badge">Spezialität</span>' : ''}
-          </div>
-          <div class="sweet__meta">
-            <span class="sweet__ar" lang="ar" dir="rtl">${s.ar}</span>
-            <h3>${esc(s.name)}</h3>
-            <p class="sweet__de">${esc(s.de)}</p>
-          </div>
-          <span class="sweet__flip" aria-hidden="true">↻</span>
-        </div>
-        <div class="sweet__face sweet__back">
+    <article class="sweet reveal" id="sweet-${s.id}" data-group="${s.group}" style="--d:${(i % 3) * 60}ms">
+      <button class="sweet__card" data-id="${s.id}" aria-label="${esc(s.name)} – mehr erfahren">
+        <span class="sweet__art c-${COLORS[i % COLORS.length]}">
+          ${s.img ? `<img src="${s.img}" alt="" loading="lazy">` : illustration(s.shape, i)}
+          ${s.star ? '<span class="badge">Spezialität</span>' : ''}
+        </span>
+        <span class="sweet__meta">
           <span class="sweet__ar" lang="ar" dir="rtl">${s.ar}</span>
-          <h3>${esc(s.name)}</h3>
-          <p>${esc(s.text)}</p>
-          <ul class="ingredients">${s.zutaten.map((z) => `<li>${esc(z)}</li>`).join('')}</ul>
-          <p class="sweet__price"><small>Allergene: ${s.allergens}</small></p>
-        </div>
+          <span class="sweet__name">${esc(s.name)}</span>
+          <span class="sweet__de">${esc(s.de)}</span>
+          <span class="ingredients">${s.zutaten.slice(0, 3).map((z) => `<span>${esc(z)}</span>`).join('')}</span>
+          <span class="sweet__more">Mehr erfahren <span aria-hidden="true">→</span></span>
+        </span>
       </button>
     </article>`).join('');
 
   grid.addEventListener('click', (e) => {
-    const btn = e.target.closest('.sweet__inner');
-    if (!btn) return;
-    const on = btn.parentElement.classList.toggle('flipped');
-    btn.setAttribute('aria-pressed', on);
+    const card = e.target.closest('.sweet__card');
+    if (card) openSweet(card.dataset.id);
   });
 
   const filter = $('#sweetFilter');
@@ -257,6 +250,60 @@ function renderSweets() {
   });
 }
 
+// ─── Künefe: das Stück baut sich Schicht für Schicht auf, je nachdem welcher Schritt gerade in der Mitte ist ───
+function initBuild() {
+  const stage = $('#buildStage');
+  const steps = $$('.step');
+  const io = new IntersectionObserver((entries) => entries.forEach((e) => {
+    if (!e.isIntersecting) return;
+    stage.dataset.step = e.target.dataset.step;
+    steps.forEach((st) => st.classList.toggle('is-active', st === e.target));
+  }), { rootMargin: '-45% 0px -45% 0px' });
+  steps.forEach((st) => io.observe(st));
+  steps[0].classList.add('is-active');
+}
+
+// ─── Schale zusammenstellen → WhatsApp-Nachricht ───
+function initSchale() {
+  const picker = $('#picker'), plate = $('#boxPlate'), order = $('#boxOrder');
+  const chosen = new Set();
+  let size = '500 g';
+  const sorts = SWEETS.filter((s) => s.price.includes('/ kg'));
+  picker.innerHTML = sorts.map((s) => `
+    <button class="pick" aria-pressed="false" data-id="${s.id}">
+      <span class="pick__img">${s.img ? `<img src="${s.img}" alt="" loading="lazy">` : ''}</span>
+      <span class="pick__name">${esc(s.name)}</span>
+    </button>`).join('');
+
+  const update = () => {
+    const list = sorts.filter((s) => chosen.has(s.id));
+    plate.innerHTML = list.length
+      ? list.map((s) => `<span class="box__item">${s.img ? `<img src="${s.img}" alt="">` : ''}${esc(s.name)}</span>`).join('')
+      : '<span class="box__empty">Noch leer – tippen Sie auf Ihre Lieblingssorten.</span>';
+    const text = `Hallo Syrian Star, ich möchte gerne eine gemischte Schale (${size}) vorbestellen mit: ${list.map((s) => s.name).join(', ')}.`;
+    order.href = list.length ? `${SHOP.whatsapp}?text=${encodeURIComponent(text)}` : '';
+    order.setAttribute('aria-disabled', !list.length);
+    order.textContent = list.length ? `${size} mit ${list.length} ${list.length === 1 ? 'Sorte' : 'Sorten'} vorbestellen` : 'Per WhatsApp vorbestellen';
+  };
+  picker.addEventListener('click', (e) => {
+    const b = e.target.closest('.pick');
+    if (!b) return;
+    const on = !chosen.has(b.dataset.id);
+    on ? chosen.add(b.dataset.id) : chosen.delete(b.dataset.id);
+    b.setAttribute('aria-pressed', on);
+    update();
+  });
+  $('#sizes').addEventListener('click', (e) => {
+    const b = e.target.closest('button');
+    if (!b) return;
+    size = b.dataset.size;
+    $$('#sizes button').forEach((x) => { x.classList.toggle('on', x === b); x.setAttribute('aria-checked', x === b); });
+    update();
+  });
+  order.addEventListener('click', (e) => { if (!chosen.size) e.preventDefault(); });
+  update();
+}
+
 function renderGlossary() {
   $('#glossary').innerHTML = GLOSSARY.map(([term, ar, def], i) => `
     <div class="gloss reveal" style="--d:${(i % 2) * 60}ms"><dt><span lang="ar" dir="rtl">${ar}</span>${esc(term)}</dt><dd>${esc(def)}</dd></div>`).join('');
@@ -269,6 +316,8 @@ function renderContact() {
 }
 
 renderSweets();
+initBuild();
+initSchale();
 renderGlossary();
 renderContact();
 initNav();

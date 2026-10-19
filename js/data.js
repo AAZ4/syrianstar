@@ -149,7 +149,7 @@ export const SWEETS = [
     de: 'Sesamkekse aus Damaskus',
     text: 'Hauchdünne, knusprige Kekse – eine Seite mit geröstetem Sesam, die andere mit Pistazien. Perfekt zum Tee.',
     zutaten: ['Mehl', 'Butter', 'Sesam', 'Pistazien', 'Honig / Sirup'],
-    price: '18 € / kg', allergens: 'A,B,C,E', shape: 'cookie', img: 'assets/img/barazek.jpg',
+    price: '18 € / kg', allergens: 'A,B,C,E', shape: 'cookie', img: 'assets/img/teller/barazek.jpg',
   },
   {
     id: 'maamoul', ar: 'معمول', name: 'Maamoul', group: 'trocken',
@@ -181,53 +181,9 @@ export const GLOSSARY = [
   ['Ater (Sirup)', 'قطر', 'Zuckersirup mit Zitrone, oft mit Rosen- oder Orangenblütenwasser aromatisiert.'],
   ['Samneh', 'سمنة', 'Geklärte Butter (Butterschmalz). Gibt den nussigen Geschmack und die Knusprigkeit.'],
   ['Akkawi / Nabulsi', 'جبنة عكاوي', 'Milde, weiße Käsesorten, entsalzt – schmelzen weich und ziehen Fäden.'],
-  ['Zaatar', 'زعتر', 'Gewürzmischung aus wildem Thymian, Sumach und geröstetem Sesam – mit Olivenöl auf Manakish.'],
-  ['Muhammara', 'محمرة', 'Würzige rote Paste aus Paprika, Chili und Gewürzen.'],
-  ['Kashkaval', 'قشقوان', 'Gelber, aromatischer Schnittkäse, der schön schmilzt.'],
-  ['Schwarzkümmel', 'حبة البركة', 'Kleine schwarze Samen mit leicht pfeffrigem Aroma – typisch auf Käse-Manakish.'],
   ['Filo / Yufka', 'رقائق', 'Papierdünn ausgerollter Teig, der in vielen Schichten Baklava & Co. bildet.'],
-];
-
-// ─── Backwaren ───
-export const BAKERY = [
-  {
-    title: 'Manakish', ar: 'مناقيش', img: 'assets/img/manakish-zaatar.jpg',
-    lead: 'Das syrische Frühstück: frisch gebackenes Fladenbrot mit Belag – direkt aus dem Ofen.',
-    items: [
-      ['Manakish Zaatar', 'Zaatar, Sesam, Olivenöl', '2 €', 'A,E'],
-      ['Manakish Käse', 'Käse, Schwarzkümmel', '2 €', 'A,B'],
-      ['Manakish Käse & schwarze Oliven', 'Käse, schwarze Oliven, Schwarzkümmel', '2 €', 'A,B'],
-      ['Manakish Muhammara', 'Würzpaste, Sesam, Schwarzkümmel', '2 €', 'A,E'],
-      ['Manakish Muhammara mit Kashkaval', 'Würzpaste, Sesam, Schwarzkümmel, Kashkaval', '2 €', 'A,B,E'],
-      ['Sfiha mit Gemüse', 'Syrischer Lahmacun: Lammhack, Petersilie, Zwiebel, Tomate, Paprika', '2,50 €', 'A'],
-      ['Sfiha mit Joghurt', 'Lammhackfleisch, Joghurt, Granatapfelsirup', '2,50 €', 'A,B'],
-    ],
-  },
-  {
-    title: 'Fatayer', ar: 'فطاير', img: 'assets/img/fatayer-spinat.jpg',
-    lead: 'Kleine gefüllte Teigtaschen – dreieckig, knusprig, perfekt für unterwegs.',
-    items: [
-      ['Fatayer mit Spinat', 'Spinat, Zwiebel', '1,50 €', 'A,B'],
-      ['Fatayer mit Käse & Zaatar', 'Käse, Zaatar, Sesam, Olivenöl', '1,50 €', 'A,B,E'],
-      ['Fatayer mit Kartoffeln', 'Kartoffeln, Sesam', '1,50 €', 'A,B,E'],
-      ['Fatayer mit Wurst', 'Wurst, Sesam', '1,50 €', 'A,B,E'],
-    ],
-  },
-  {
-    title: 'Pizza', ar: 'بيتزا', img: 'assets/img/pizza-mozzarella.jpg',
-    lead: 'Hausgemachter Teig, eigene Tomatensoße. Alle Pizzen auch als Party-Pizza (40 × 60 cm) ab 26 € – Margherita ab 23 €.',
-    items: [
-      ['Pizza Margherita', 'Tomatensoße, Käse', '8,50 €', 'A,B'],
-      ['Champignonpizza', 'Tomatensoße, Käse, Champignons', '9 €', 'A,B'],
-      ['Pizza Brokkoli', 'Tomatensoße, Käse, Brokkoli', '10 €', 'A,B'],
-      ['Pizza vegetarisch', 'Paprika, Brokkoli, schwarze Oliven, Champignons, Mais', '10 €', 'A,B'],
-      ['Pizza Spinat', 'Tomatensoße, Käse, Spinat, Mozzarella', '10 €', 'A,B'],
-      ['Pizza Mozzarella', 'Tomatensoße, Käse, Mozzarella, schwarze Oliven', '10 €', 'A,B'],
-      ['Pizza Sucuk', 'Tomatensoße, Käse, Sucuk', '10 €', 'A,B'],
-      ['Pizza Salami', 'Tomatensoße, Käse, Salami', '10 €', 'A,B'],
-      ['Thunfischpizza', 'Thunfisch, Zwiebel, schwarze Oliven', '10 €', 'A,B,G'],
-    ],
-  },
+  ['Aleppo-Pistazie', 'فستق حلبي', 'Kleine, besonders grüne und aromatische Pistazie aus Nordsyrien – das Markenzeichen syrischer Süßigkeiten.'],
+  ['Rosen- & Orangenblütenwasser', 'ماء الورد والزهر', 'Destillierte Blütenwasser. Wenige Tropfen geben Sirup und Creme ihren typischen, blumigen Duft.'],
 ];
 
 export const CAKES = [
@@ -259,17 +215,6 @@ export const MENU = [
       { title: 'Orientalisches Trockengebäck', note: 'pro kg', items: [
         ['Barazek', '18 €', 'A,B,C,E'], ['Maamoul', '18 €', 'A,B,C'], ['Ghraybeh', '18 €', 'A,B,C'],
       ]},
-    ],
-  },
-  {
-    tab: 'Manakish & Fatayer', sections: [
-      { title: 'Manakish', items: BAKERY[0].items.map(i => [i[0], i[2], i[3]]) },
-      { title: 'Fatayer', items: BAKERY[1].items.map(i => [i[0], i[2], i[3]]) },
-    ],
-  },
-  {
-    tab: 'Pizza', sections: [
-      { title: 'Pizza', note: 'Party-Pizza 40 × 60 cm ab 26 € (Margherita ab 23 €)', items: BAKERY[2].items.map(i => [i[0], i[2], i[3]]) },
     ],
   },
   {
