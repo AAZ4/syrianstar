@@ -139,7 +139,7 @@ async function initVitrine() {
     img.alt = t.name;
     img.hidden = !img.getAttribute('src');
     $('#vdOrder').href = waLink(SHOP.phone, t.piece?.order || `Hallo Syrian Star, ich möchte gerne ${t.name} bestellen.`);
-    $('#vdMore').onclick = () => { api?.deselect(); t.piece ? openPiece(t) : openSweet(t.id); };
+    $('#vdMore').onclick = () => { showDetail(null); t.piece ? openPiece(t) : openSweet(t.id); };
     detail.hidden = false;
     stage.classList.add('is-tasting');
   };
@@ -148,10 +148,10 @@ async function initVitrine() {
   $('#vPrev').addEventListener('click', () => api?.goTo(current - 1));
   $('#vNext').addEventListener('click', () => api?.goTo(current + 1));
   $('#vTaste').addEventListener('click', () => api?.selectFirstOf(current));
-  $('#vClose').addEventListener('click', () => api?.deselect());
+  $('#vClose').addEventListener('click', () => showDetail(null));
   addEventListener('keydown', (e) => {
     if (!api) return;
-    if (e.key === 'Escape') api.deselect();
+    if (e.key === 'Escape') showDetail(null);
     const r = section.getBoundingClientRect();
     const inView = r.top < innerHeight * 0.5 && r.bottom > innerHeight * 0.5;
     if (inView && api.zoomed && (e.key === 'ArrowRight' || e.key === 'ArrowLeft')) {
