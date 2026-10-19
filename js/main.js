@@ -15,6 +15,7 @@ const TRAYS = [
       image: 'assets/img/teller/knafeh-nabulsi.jpg',   // Standbild (das Drehvideo hat geruckelt)
       spin: null,                                     // Drehansicht weiterhin möglich: { dir, count, ext }
       prices: [['Knafeh Nabulsi (fein)', '24 € / kg'], ['Knafeh bin Narein (grob)', '18 € / kg']],
+      priceShort: 'fein 24 € / kg · grob 18 € / kg',
       order: 'Hallo Syrian Star, ich möchte gerne Künefe bestellen:',
     } },
   { id: 'baklava', model: 'photoFlat', photo: { src: 'assets/img/theke/baklava-tablett.jpg', crop: [75, 56, 1192, 800] } },
@@ -127,16 +128,18 @@ async function initVitrine() {
   const showDetail = (i) => {
     if (i == null) { detail.hidden = true; stage.classList.remove('is-tasting'); return; }
     const t = TRAYS[i];
-    if (t.piece) { openPiece(t); return; }   // Blech: eigenes Stück-Fenster statt Info-Karte
+    // Für alle Gerichte dieselbe kleine Karte (ohne Scrollen); Details öffnen das große Fenster
     $('#vdAr').textContent = t.ar;
     $('#vdName').textContent = t.name;
     $('#vdDe').textContent = t.de;
     $('#vdText').textContent = t.text;
-    $('#vdIng').innerHTML = t.zutaten.map((z) => `<li>${esc(z)}</li>`).join('');
+    $('#vdPrice').textContent = t.piece?.priceShort || t.price;
     const img = $('#vdImg');
-    img.hidden = !t.img;
-    if (t.img) { img.src = t.img; img.alt = t.name; }
-    $('#vdLex').onclick = (e) => { e.preventDefault(); api?.deselect(); openSweet(t.id); };
+    img.src = t.piece?.image || t.img || '';
+    img.alt = t.name;
+    img.hidden = !img.getAttribute('src');
+    $('#vdOrder').href = waLink(SHOP.phone, t.piece?.order || `Hallo Syrian Star, ich möchte gerne ${t.name} bestellen.`);
+    $('#vdMore').onclick = () => { api?.deselect(); t.piece ? openPiece(t) : openSweet(t.id); };
     detail.hidden = false;
     stage.classList.add('is-tasting');
   };

@@ -366,7 +366,7 @@ export async function initVitrine({ canvas, trays, onTray, onSelect, onHover, re
     obj.position.set(x, y, z);
     obj.rotation.y = ry;
     obj.traverse((o) => { if (o.isMesh) { o.castShadow = true; o.receiveShadow = true; o.userData.root = obj; } });
-    obj.userData = { home: obj.position.clone(), homeRot: obj.rotation.clone(), tray: tray.userData.index, lift: 0 };
+    obj.userData = { home: obj.position.clone(), homeRot: obj.rotation.clone(), tray: tray.userData.index, lift: 0, noLift: true };   // einheitlich: nichts wird angehoben
     tray.add(obj);
     pieceRoots.push(obj);
     return obj;
@@ -881,7 +881,10 @@ export async function initVitrine({ canvas, trays, onTray, onSelect, onHover, re
     ndc.set(((e.clientX - r.left) / r.width) * 2 - 1, -((e.clientY - r.top) / r.height) * 2 + 1);
     ray.setFromCamera(ndc, camera);
     const hits = ray.intersectObjects(pieceRoots, true);
-    return hits.length ? hits[0].object.userData.root : null;
+    if (!hits.length) return null;
+    let o = hits[0].object;
+    while (o && !pieceRoots.includes(o)) o = o.parent;
+    return o;
   };
   const pxPerTray = () => Math.min(width * 0.55, 420);
   // aktuelles Gericht melden (sofort, unabhängig von der Animation)
