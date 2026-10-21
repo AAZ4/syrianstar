@@ -45,7 +45,7 @@ export const SWEETS = [
     de: 'Die „Gedrehte“',
     text: 'Feine Kadayif-Teigfäden werden um ganze Pistazien gewickelt, in Butterschmalz goldbraun gebacken, mit Sirup getränkt und in Scheiben geschnitten.',
     zutaten: ['Kadayif-Teig', 'ganze Pistazien', 'Butterschmalz', 'Zuckersirup'],
-    price: '43 € / kg', allergens: 'A,B,C', shape: 'roll', img: 'assets/img/mabrumeh.jpg',
+    price: '43 € / kg', allergens: 'A,B,C', shape: 'roll', img: 'assets/img/teller/mabrumeh.jpg',
   },
   {
     id: 'baklava', ar: 'بقلاوة', name: 'Baklava', group: 'pistazie',
@@ -108,7 +108,7 @@ export const SWEETS = [
     de: 'Die „Käsesüße“ aus Hama & Homs',
     text: 'Ein seidiger Teig aus Grieß und mildem Käse wird hauchdünn ausgerollt, mit Sahnecreme gefüllt, aufgerollt und mit Rosenwasser-Sirup und Pistazien serviert.',
     zutaten: ['Grieß', 'milder Käse', 'Ashta-Creme', 'Rosenwasser', 'Pistazien'],
-    price: '18 € / kg · mit frischer Sahne 24 €', allergens: 'A,B,C', shape: 'creamroll', img: 'assets/img/halawet-el-jibn.jpg',
+    price: '18 € / kg · mit frischer Sahne 24 €', allergens: 'A,B,C', shape: 'creamroll', img: 'assets/img/teller/halawet.jpg',
   },
   {
     id: 'madlouka', ar: 'مدلوقة', name: 'Madlouka', group: 'sahne',
