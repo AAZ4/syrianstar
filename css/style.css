@@ -201,6 +201,9 @@ em { font-style: italic; color: var(--brass); }
 
 @media (max-width: 759px) {
   .vitrine__intro { top: 108px; left: 16px; right: 16px; }
+  .vitrine__intro .hero__actions { flex-wrap: nowrap; gap: 8px; }
+  .vitrine__intro .hero__actions .btn { flex: 1; min-height: 44px; padding: 0 12px; font-size: 14px; }
+  .vitrine__hint { margin-top: 14px; }
   .vitrine__intro h1 { font-size: clamp(50px, 15vw, 72px); }
   .vitrine__lead { font-size: 15px; margin-bottom: 18px; }
   .vitrine__intro .eyebrow { display: none; }
@@ -580,6 +583,13 @@ em { font-style: italic; color: var(--brass); }
 .allergens ul { list-style: none; padding: 0; margin: 16px 0; display: grid; grid-template-columns: repeat(auto-fill, minmax(260px, 1fr)); gap: 8px 24px; }
 .allergens b { display: inline-grid; place-items: center; width: 24px; height: 24px; border-radius: 50%; background: var(--walnut); color: var(--brass-2); margin-right: 8px; font-size: 12px; }
 
+@media (max-width: 759px) and (max-height: 700px) {
+  /* kleine Handys (z. B. iPhone SE): Begrüßung kompakter */
+  .vitrine__intro { top: 96px; }
+  .vitrine__intro h1 { font-size: 46px; margin-bottom: 10px; }
+  .vitrine__lead { font-size: 14px; margin-bottom: 12px; }
+  .vitrine__hint { display: none; }
+}
 @media (prefers-reduced-motion: reduce) {
   .nav__brand::after { display: none; }
   html { scroll-behavior: auto; }

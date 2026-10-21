@@ -774,6 +774,8 @@ export async function initVitrine({ canvas, trays, onTray, onSelect, onHover, re
 
   // ── Zustand ──
   let width = 1, height = 1, zoomTarget = 0, zoom = 0, running = false, raf = 0;
+  let topInset = 0;   // Handy: so viele Pixel oben gehören dem Begrüßungstext – die Theke beginnt erst darunter
+  const glassTop = new THREE.Vector3();
   let trayPos = 0, trayTarget = 0, dragging = false;   // Position entlang der Theke (in Tabletts)
   let selected = null, hovered = null, current = 0;
   const pointer = { x: 0, y: 0, sx: 0, sy: 0 };
@@ -813,7 +815,18 @@ export async function initVitrine({ canvas, trays, onTray, onSelect, onHover, re
     );
     tmp.set(cx + intro * (small ? 1.4 : -0.6), lerp(0.0, 0.15, intro), -0.05);
     camera.lookAt(tmp);
-    camera.setViewOffset(width, height, 0, small ? height * lerp(0.13, -0.08, intro) : -height * 0.16 * intro, width, height);
+    let offY = small ? height * lerp(0.13, -0.08, intro) : -height * 0.16 * intro;
+    camera.setViewOffset(width, height, 0, offY, width, height);
+    if (small && topInset && intro > 0) {
+      // Oberkante der Theke (Glas) auf dem Bildschirm finden und bei Bedarf unter den Text schieben
+      camera.updateMatrixWorld();
+      glassTop.set(tmp.x, 1.16, -0.08).project(camera);
+      const y = (1 - glassTop.y) / 2 * height;
+      if (y < topInset) {
+        offY -= (topInset - y) * intro;
+        camera.setViewOffset(width, height, 0, offY, width, height);
+      }
+    }
 
     key.position.set(cx + 1.5, 6, 4.5);
     key.target.position.set(cx, 0, 0);
@@ -962,6 +975,7 @@ export async function initVitrine({ canvas, trays, onTray, onSelect, onHover, re
 
   return {
     setZoom(v) { zoomTarget = clamp01(v); },
+    setTopInset(px) { topInset = px; },
     goTo,
     get index() { return trayTarget; },
     selectFirstOf(i) { const p = pieceRoots.find((q) => q.userData.tray === i); if (p) select(p); },

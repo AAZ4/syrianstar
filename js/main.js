@@ -163,6 +163,14 @@ async function initVitrine() {
   try {
     const { initVitrine: init } = await import('./vitrine-scene.js');
     api = await init({ canvas, trays: TRAYS, reducedMotion, onTray: showTray, onSelect: showDetail });
+    // Handy: Theke beginnt immer unterhalb des Begrüßungstexts – egal wie hoch oder schmal der Bildschirm ist
+    const fitIntro = () => {
+      const r = intro.getBoundingClientRect(), s = stage.getBoundingClientRect();
+      api.setTopInset(r.bottom - s.top + 14);
+    };
+    fitIntro();
+    addEventListener('resize', fitIntro);
+    document.fonts?.ready.then(fitIntro);
   } catch (err) {
     console.warn('3D nicht verfügbar:', err);
     stage.classList.add('no-webgl');
