@@ -81,7 +81,10 @@ em { font-style: italic; color: var(--brass); }
 .nav.scrolled { padding-block: 9px; border-color: var(--line); }
 .nav.scrolled::before { opacity: 1; }
 .nav__brand { display: flex; align-items: center; gap: 10px; text-decoration: none; font: 700 23px/1 var(--f-display); }
-.nav__brand img { width: 40px; height: 40px; }
+.nav__brand img { width: 54px; height: 54px; filter: drop-shadow(0 2px 6px rgba(58, 38, 24, .18)); transition: width .3s, height .3s; }
+.nav.scrolled .nav__brand img { width: 46px; height: 46px; }
+.nav__name { display: grid; gap: 3px; white-space: nowrap; }
+.nav__name small { font: 600 13px/1 var(--f-ar); color: var(--brass); letter-spacing: 0; }
 .nav__links { display: flex; gap: 2px; margin-left: auto; }
 .nav__links a { text-decoration: none; padding: 8px 14px; border-radius: 999px; font-size: 14px; font-weight: 500; color: var(--ink-soft); transition: color .2s, background .2s; }
 .nav__links a:hover { color: var(--ink); background: rgba(176, 138, 62, .1); }
@@ -98,7 +101,7 @@ em { font-style: italic; color: var(--brass); }
   .nav.open .nav__links { opacity: 1; pointer-events: auto; }
   .nav__links a { font: 600 36px/1.2 var(--f-display); color: var(--ink); }
 }
-@media (max-width: 420px) { .nav__brand span { display: none; } }
+@media (max-width: 420px) { .nav__name { display: none; } .nav__brand img { width: 50px; height: 50px; } }
 
 /* ═════════ Hero: Die Vitrine ═════════ */
 .vitrine { position: relative; height: 230vh; height: 230svh; }   /* Hineinfahren + Haltezone */
@@ -190,6 +193,9 @@ em { font-style: italic; color: var(--brass); }
   .vitrine__detail h2 { font-size: 27px; }
   .vd__text { -webkit-line-clamp: 2; margin-top: 10px; }
 }
+
+.vitrine__logo { width: clamp(84px, 9vw, 120px); height: auto; margin: 0 0 14px -6px; filter: drop-shadow(0 6px 18px rgba(58, 38, 24, .22)); }
+@media (max-width: 759px) { .vitrine__logo { width: 72px; margin-bottom: 8px; } }
 
 /* ── Stück-Fenster ── */
 .piece-modal { position: fixed; inset: 0; z-index: 80; display: grid; place-items: center; padding: 16px; background: rgba(43, 33, 24, .45); backdrop-filter: blur(6px); animation: fadein .3s var(--ease); }
@@ -443,7 +449,7 @@ em { font-style: italic; color: var(--brass); }
 /* Footer */
 .footer { background: var(--walnut); color: var(--cream); padding: 56px 0 40px; text-align: center; border-top: 1px solid var(--brass); }
 .footer__inner { display: grid; justify-items: center; gap: 14px; }
-.footer img { width: 80px; height: 80px; }
+.footer__logo { width: 150px; height: 150px; filter: drop-shadow(0 8px 24px rgba(0, 0, 0, .35)); }
 .footer p { margin: 0; font: italic 500 22px/1.3 var(--f-display); color: var(--brass-2); }
 .footer nav { display: flex; gap: 20px; }
 .footer nav a { font-size: 14px; }
