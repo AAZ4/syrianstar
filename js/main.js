@@ -194,6 +194,7 @@ async function initVitrine() {
     down.classList.toggle('is-shown', p > 0.95 && off < hold + innerHeight * 0.25);
   };
   const down = $('#vDown');
+  down.addEventListener('click', () => scrollTo({ top: section.offsetTop + section.offsetHeight, behavior: reducedMotion ? 'auto' : 'smooth' }));
   addEventListener('scroll', onScroll, { passive: true });
 
   // Bremse: Wer mit Schwung über die Theke hinweg scrollt (egal wie stark), bleibt an der Theke stehen.
@@ -215,8 +216,11 @@ async function initVitrine() {
   addEventListener('scroll', () => {
     if (locked) return;
     const y = scrollY, hold = section.offsetTop + innerHeight * ZOOM;
-    const crossed = (lastY < hold - 4 && y > hold + 4) || (lastY > hold + 4 && y < hold - 4);
-    if (crossed && performance.now() - lastInput < 900 && $('#pieceModal').hidden) lockAt(hold);
+    const dy = y - lastY;
+    // Wo wäre die Seite beim nächsten Bild? Liegt die Theke dazwischen, jetzt anhalten (kein Vorbeischießen + Zurückspringen)
+    const next = y + dy * 1.5;
+    const hits = (lastY < hold - 4 && next >= hold - 4) || (lastY > hold + 4 && next <= hold + 4);
+    if (hits && Math.abs(dy) > 6 && performance.now() - lastInput < 900 && $('#pieceModal').hidden) lockAt(hold);
     else lastY = y;
   }, { passive: true });
   addEventListener('resize', onScroll);

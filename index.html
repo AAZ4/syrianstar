@@ -17,7 +17,7 @@
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,500;0,600;0,700;1,500;1,600&family=Manrope:wght@400;500;600;700&family=Reem+Kufi:wght@400..700&display=swap" rel="stylesheet">
-  <link rel="stylesheet" href="css/style.css">
+  <link rel="stylesheet" href="css/style.css?v=202610221148">
 
   <script type="importmap">
     { "imports": {
@@ -31,7 +31,6 @@
   <link rel="modulepreload" href="https://cdn.jsdelivr.net/npm/three@0.165.0/examples/jsm/loaders/GLTFLoader.js" crossorigin>
   <link rel="modulepreload" href="https://cdn.jsdelivr.net/npm/three@0.165.0/examples/jsm/environments/RoomEnvironment.js" crossorigin>
   <link rel="modulepreload" href="js/vitrine-scene.js">
-  <link rel="preload" as="image" href="assets/img/theke/kunefe-blech.jpg">
 
   <script type="application/ld+json">
   {
@@ -86,9 +85,9 @@
           <p class="vitrine__hint"><span aria-hidden="true">↓</span> Runterscrollen, um an die Theke zu treten</p>
         </div>
 
-        <p class="vitrine__down" id="vDown" aria-hidden="true">Weiter nach unten <span>↓</span></p>
         <div class="vitrine__caption" id="vCaption" aria-live="polite">
           <span class="vitrine__swipe" aria-hidden="true">‹ wischen ›</span>
+          <button class="vitrine__down" id="vDown" aria-label="Weiter nach unten scrollen"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M6 9l6 6 6-6"/></svg></button>
           <button class="vbtn" id="vPrev" aria-label="Vorheriges Tablett">‹</button>
           <div class="vitrine__label">
             <span class="vitrine__count" id="vCount">01 / 08</span>
@@ -374,6 +373,6 @@
     </div>
   </footer>
 
-  <script type="module" src="js/main.js"></script>
+  <script type="module" src="js/main.js?v=202610221148"></script>
 </body>
 </html>

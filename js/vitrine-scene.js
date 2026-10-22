@@ -215,6 +215,8 @@ export async function initVitrine({ canvas, trays, onTray, onSelect, onHover, re
   renderer.toneMappingExposure = 0.92;
   renderer.shadowMap.enabled = true;
   renderer.shadowMap.type = lowPower ? THREE.PCFShadowMap : THREE.PCFSoftShadowMap;
+  renderer.shadowMap.autoUpdate = false;   // Schatten sind fest; neu nur bei Tablettwechsel oder nachgeladenen Modellen
+  const reshadow = () => { renderer.shadowMap.needsUpdate = true; };
 
   const scene = new THREE.Scene();
   const pmrem = new THREE.PMREMGenerator(renderer);
@@ -331,7 +333,9 @@ export async function initVitrine({ canvas, trays, onTray, onSelect, onHover, re
     t.anisotropy = 8;
     return t;
   };
-  try {
+  // Nicht darauf warten: diese Fotos verschönern nur die Platzhalter, bis die echten Modelle geladen sind.
+  // (Vorher hat die Theke hier bis zu mehrere Sekunden auf drei Fotos gewartet.)
+  (async () => { try {
     const [mabTop, mabSide, barTop, halSkin, halEnd] = await Promise.all([
       photoTex('assets/img/mabrumeh.jpg', [648, 455, 255, 290]),          // Schnittfläche mit ganzen Pistazien
       photoTex('assets/img/mabrumeh.jpg', [840, 330, 320, 120], [3, 1]),   // gedrehte Teigfäden
@@ -341,12 +345,12 @@ export async function initVitrine({ canvas, trays, onTray, onSelect, onHover, re
     ]);
     M.mabTop = physMat({ map: mabTop, roughness: 0.5, clearcoat: 0.4 });
     M.mabSide = physMat({ map: mabSide, roughness: 0.5, clearcoat: 0.6, clearcoatRoughness: 0.25 });
-    M.sesame = new THREE.MeshStandardMaterial({ map: barTop, roughness: 0.55 });
+    M.sesame.map = barTop; M.sesame.roughness = 0.55; M.sesame.needsUpdate = true;
     M.dough.map = halSkin; M.dough.color.set(0xffffff); M.dough.needsUpdate = true;
     M.ashta.map = halEnd; M.ashta.color.set(0xffffff); M.ashta.needsUpdate = true;
   } catch (err) {
     console.warn('Fotos für Texturen nicht geladen:', err);
-  }
+  } })();
 
   // ── Tabletts ──
   const pieceRoots = [];          // alle anklickbaren Stücke
@@ -768,7 +772,8 @@ export async function initVitrine({ canvas, trays, onTray, onSelect, onHover, re
     piece(tray, g, 0, 0, 0, 0);
   }
 
-  await document.fonts?.ready;
+  // Schriften für die Namensschilder – aber höchstens 1,5 s warten
+  await Promise.race([document.fonts?.ready, new Promise((r) => setTimeout(r, 1500))]);
   trays.forEach((t, i) => {
     const tray = new THREE.Group();
     tray.userData.index = i;
@@ -812,6 +817,7 @@ export async function initVitrine({ canvas, trays, onTray, onSelect, onHover, re
       }
     });
     (renderer.compileAsync ? renderer.compileAsync(scene, camera) : Promise.resolve(renderer.compile(scene, camera))).catch(() => {});
+    reshadow();
   }
   warm();
   [1200, 3500, 7000].forEach((ms) => setTimeout(warm, ms));   // Fotos/Reliefs, die inzwischen geladen wurden
@@ -877,8 +883,9 @@ export async function initVitrine({ canvas, trays, onTray, onSelect, onHover, re
       }
     }
 
-    key.position.set(cx + 1.5, 6, 4.5);
-    key.target.position.set(cx, 0, 0);
+    // Licht steht pro Tablett fest (nicht mit der Kamera mitwandern) – so bleiben die Schatten gültig
+    const lx = Math.round(trayTarget) * SPACING;
+    if (key.target.position.x !== lx) { key.position.set(lx + 1.5, 6, 4.5); key.target.position.set(lx, 0, 0); key.target.updateMatrixWorld(); reshadow(); }
     inner.position.set(cx, 0.85, 0.1);
 
     // Hover-Effekt

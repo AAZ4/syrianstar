@@ -1,2 +1,8 @@
 /*
   X-Robots-Tag: noindex, nofollow
+
+# CSS/JS/Daten immer beim Server nachfragen, damit Änderungen sofort ankommen
+/css/*
+  Cache-Control: no-cache
+/js/*
+  Cache-Control: no-cache
