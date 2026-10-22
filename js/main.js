@@ -189,8 +189,36 @@ async function initVitrine() {
     api.setZoom(p);
     intro.classList.toggle('is-hidden', p > 0.3);
     caption.classList.toggle('is-shown', p > 0.6);
+    // Hinweis „weiter nach unten“, solange man an der Theke steht
+    const off = scrollY - section.offsetTop, hold = innerHeight * ZOOM;
+    down.classList.toggle('is-shown', p > 0.95 && off < hold + innerHeight * 0.25);
   };
+  const down = $('#vDown');
   addEventListener('scroll', onScroll, { passive: true });
+
+  // Bremse: Wer mit Schwung über die Theke hinweg scrollt (egal wie stark), bleibt an der Theke stehen.
+  // Erst eine neue Scrollbewegung führt weiter. Gilt nur für Scrollen mit Finger, Maus oder Tastatur –
+  // ein Klick auf einen Menüpunkt springt weiterhin direkt zum Ziel.
+  let lastY = scrollY, lastInput = 0, locked = false;
+  const markInput = () => { lastInput = performance.now(); };
+  ['wheel', 'touchmove', 'keydown'].forEach((ev) => addEventListener(ev, markInput, { passive: true }));
+  const lockAt = (y) => {
+    locked = true;
+    const root = document.documentElement;
+    root.style.overflow = document.body.style.overflow = 'hidden';   // stoppt den Schwung (auch am iPhone)
+    scrollTo({ top: y, behavior: 'instant' });
+    setTimeout(() => {
+      root.style.overflow = document.body.style.overflow = '';
+      locked = false; lastY = scrollY;
+    }, 650);
+  };
+  addEventListener('scroll', () => {
+    if (locked) return;
+    const y = scrollY, hold = section.offsetTop + innerHeight * ZOOM;
+    const crossed = (lastY < hold - 4 && y > hold + 4) || (lastY > hold + 4 && y < hold - 4);
+    if (crossed && performance.now() - lastInput < 900 && $('#pieceModal').hidden) lockAt(hold);
+    else lastY = y;
+  }, { passive: true });
   addEventListener('resize', onScroll);
   onScroll();
 

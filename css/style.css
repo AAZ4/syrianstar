@@ -169,6 +169,10 @@ em { font-style: italic; color: var(--brass); }
 .vitrine__swipe { position: absolute; left: 50%; top: -34px; translate: -50% 0; white-space: nowrap; font-size: 12.5px; font-weight: 600; letter-spacing: .04em; color: var(--ink-soft); background: rgba(255, 253, 248, .8); padding: 4px 12px; border-radius: 999px; animation: nudge 2.4s ease-in-out infinite; }
 
 .swiped .vitrine__swipe { display: none; }
+.vitrine__down { position: absolute; left: 50%; top: 112px; translate: -50% 0; z-index: 3; margin: 0; padding: 7px 14px; border-radius: 999px; font-size: 13px; font-weight: 600; color: var(--ink-soft); background: rgba(255, 253, 248, .85); backdrop-filter: blur(8px); border: 1px solid var(--line); opacity: 0; transform: translateY(-8px); transition: opacity .5s var(--ease) .8s, transform .5s var(--ease) .8s; pointer-events: none; }
+.vitrine__down span { display: inline-block; color: var(--brass); animation: bob 1.6s infinite; }
+.vitrine__down.is-shown { opacity: 1; transform: none; }
+.is-tasting .vitrine__down { opacity: 0; transition-delay: 0s; }
 @keyframes nudge { 0%, 100% { transform: translateX(0); } 25% { transform: translateX(-6px); } 75% { transform: translateX(6px); } }
 .vbtn { width: 44px; height: 44px; border-radius: 50%; border: 1px solid var(--line); background: var(--cream); color: var(--ink); font: 400 26px/1 var(--f-display); cursor: pointer; flex: none; transition: background .2s, border-color .2s; }
 .vbtn:hover:not(:disabled) { border-color: var(--brass); background: #fff; }
@@ -223,7 +227,9 @@ em { font-style: italic; color: var(--brass); }
 .piece-modal__box { position: relative; width: min(980px, 100%); max-height: calc(100svh - 32px); overflow: auto; display: grid; grid-template-columns: 1.15fr 1fr; background: var(--cream); border: 1px solid var(--line); border-radius: 24px; box-shadow: 0 40px 80px -30px rgba(43, 33, 24, .6); animation: rise .45s var(--ease); }
 .piece-modal__media { position: relative; background: #ede7dc;   /* passend zum Bildhintergrund */ min-height: 360px; display: grid; place-items: center; cursor: grab; touch-action: pan-y; user-select: none; }
 .piece-modal__media.is-dragging { cursor: grabbing; }
-.piece-modal__media img { width: 100%; height: 100%; max-height: 560px; object-fit: contain; pointer-events: none; }
+.piece-modal__media { overflow: hidden; }
+/* Bild füllt seinen Bereich und ragt nie über den Text (am Handy lag es sonst über Name und Beschreibung) */
+.piece-modal__media img { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; pointer-events: none; }
 .piece-modal__hint { position: absolute; left: 50%; bottom: 14px; translate: -50% 0; margin: 0; padding: 5px 12px; border-radius: 999px; background: rgba(255, 253, 248, .85); font-size: 12.5px; font-weight: 600; color: var(--ink-soft); }
 .piece-modal__info { padding: 34px 32px 30px; display: flex; flex-direction: column; }
 .piece-modal__info h2 { font: 700 44px/1 var(--f-display); margin: 4px 0 6px; }
@@ -234,7 +240,7 @@ em { font-style: italic; color: var(--brass); }
 @media (max-width: 760px) {
   .piece-modal { padding: 0; align-items: end; }
   .piece-modal__box { grid-template-columns: 1fr; border-radius: 24px 24px 0 0; max-height: 92svh; }
-  .piece-modal__media { min-height: 0; aspect-ratio: 4 / 3; }
+  .piece-modal__media { min-height: 0; aspect-ratio: 16 / 10; }
   .piece-modal__info { padding: 22px 20px 26px; }
   .piece-modal__info h2 { font-size: 34px; }
 }

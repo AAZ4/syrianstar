@@ -10,6 +10,15 @@ import { GLTFLoader } from 'three/addons/loaders/GLTFLoader.js';
 
 const TAU = Math.PI * 2;
 const rand = (a, b) => a + Math.random() * (b - a);
+// Handy/Tablet: MeshStandardMaterial statt MeshPhysicalMaterial – sieht fast gleich aus, rendert deutlich schneller
+const LOW_POWER = window.innerWidth < 760 || navigator.hardwareConcurrency <= 4;
+const PHYSICAL_ONLY = ['clearcoat', 'clearcoatRoughness', 'sheen', 'sheenColor', 'sheenRoughness', 'transmission', 'thickness', 'ior', 'iridescence'];
+function physMat(params = {}) {
+  if (!LOW_POWER) return new THREE.MeshPhysicalMaterial(params);
+  const p = { ...params };
+  PHYSICAL_ONLY.forEach((k) => delete p[k]);
+  return new THREE.MeshStandardMaterial(p);
+}
 const clamp01 = (v) => Math.min(1, Math.max(0, v));
 const smooth = (a, b, v) => { const t = clamp01((v - a) / (b - a)); return t * t * (3 - 2 * t); };
 const lerp = (a, b, t) => a + (b - a) * t;
@@ -166,7 +175,7 @@ function reliefTextures(img, crop, { green = 0.9, lum = 0.3, size = 1024, hsize 
 function reliefPlane(w, d, tex, { seg = 160, scale = 0.035 } = {}) {
   const geo = new THREE.PlaneGeometry(w, d, seg, Math.max(8, Math.round(seg * d / w)));
   geo.rotateX(-Math.PI / 2);
-  const mat = new THREE.MeshPhysicalMaterial({
+  const mat = physMat({
     map: tex.map, displacementMap: tex.disp, displacementScale: scale, displacementBias: -scale * 0.25,
     normalMap: tex.normal, normalScale: new THREE.Vector2(1.6, 1.6),
     roughness: 0.48, clearcoat: 0.45, clearcoatRoughness: 0.22, envMapIntensity: 0.35,
@@ -200,12 +209,12 @@ export async function initVitrine({ canvas, trays, onTray, onSelect, onHover, re
   const lowPower = isSmall();
 
   const renderer = new THREE.WebGLRenderer({ canvas, antialias: true, alpha: true, powerPreference: 'high-performance' });
-  renderer.setPixelRatio(Math.min(window.devicePixelRatio, lowPower ? 1.6 : 2));
+  renderer.setPixelRatio(Math.min(window.devicePixelRatio, lowPower ? 1.5 : 2));
   renderer.outputColorSpace = THREE.SRGBColorSpace;
   renderer.toneMapping = THREE.ACESFilmicToneMapping;
   renderer.toneMappingExposure = 0.92;
   renderer.shadowMap.enabled = true;
-  renderer.shadowMap.type = THREE.PCFSoftShadowMap;
+  renderer.shadowMap.type = lowPower ? THREE.PCFShadowMap : THREE.PCFSoftShadowMap;
 
   const scene = new THREE.Scene();
   const pmrem = new THREE.PMREMGenerator(renderer);
@@ -231,7 +240,7 @@ export async function initVitrine({ canvas, trays, onTray, onSelect, onHover, re
   const x0 = -1.5, x1 = (N - 1) * SPACING + 1.5, L = x1 - x0, xc = (x0 + x1) / 2;
   const marbleMap = marbleTex();
   marbleMap.repeat.set(L / 4, 0.5);
-  const marble = new THREE.MeshPhysicalMaterial({ map: marbleMap, roughness: 0.22, clearcoat: 0.7, clearcoatRoughness: 0.12 });
+  const marble = physMat({ map: marbleMap, roughness: 0.22, clearcoat: 0.7, clearcoatRoughness: 0.12 });
   const woodMap = woodTex();
   woodMap.repeat.set(L / 2.2, 1);
   const wood = new THREE.MeshStandardMaterial({ map: woodMap, roughness: 0.55 });
@@ -261,7 +270,7 @@ export async function initVitrine({ canvas, trays, onTray, onSelect, onHover, re
     gp.setXYZ(i, gp.getX(i) + xc, gcy + Math.sin(a) * R, gcz + Math.cos(a) * R);
   }
   glassGeo.computeVertexNormals();
-  const glassMat = new THREE.MeshPhysicalMaterial({
+  const glassMat = physMat({
     color: 0xffffff, roughness: 0.04, metalness: 0, transparent: true, opacity: 0.12,
     clearcoat: 1, clearcoatRoughness: 0.03, side: THREE.DoubleSide, depthWrite: false, envMapIntensity: 1.6,
   });
@@ -287,20 +296,20 @@ export async function initVitrine({ canvas, trays, onTray, onSelect, onHover, re
 
   // ── Materialien der Süßigkeiten ──
   const M = {
-    golden: new THREE.MeshPhysicalMaterial({ color: 0xc98a32, roughness: 0.45, clearcoat: 0.8, clearcoatRoughness: 0.2 }),
-    goldenDark: new THREE.MeshPhysicalMaterial({ color: 0x9c5a1c, roughness: 0.42, clearcoat: 0.9, clearcoatRoughness: 0.15 }),
-    fiber: new THREE.MeshPhysicalMaterial({ map: fiberTex('#b0681e', ['#d98e30', '#9c5614', '#e8a548', '#7f430e']), roughness: 0.5, clearcoat: 0.7, clearcoatRoughness: 0.25 }),
-    fiberOrange: new THREE.MeshPhysicalMaterial({ map: fiberTex('#c4520e', ['#ec7418', '#d45e10', '#f8903a', '#a8420c', '#ffa850']), roughness: 0.6, clearcoat: 0.3, clearcoatRoughness: 0.35 }),
-    fiberPale: new THREE.MeshPhysicalMaterial({ map: fiberTex('#efe2c4', ['#fff6e2', '#e3d1a8', '#f6ead0', '#d8c294'], 3000), roughness: 0.4, clearcoat: 0.8, clearcoatRoughness: 0.15 }),
+    golden: physMat({ color: 0xc98a32, roughness: 0.45, clearcoat: 0.8, clearcoatRoughness: 0.2 }),
+    goldenDark: physMat({ color: 0x9c5a1c, roughness: 0.42, clearcoat: 0.9, clearcoatRoughness: 0.15 }),
+    fiber: physMat({ map: fiberTex('#b0681e', ['#d98e30', '#9c5614', '#e8a548', '#7f430e']), roughness: 0.5, clearcoat: 0.7, clearcoatRoughness: 0.25 }),
+    fiberOrange: physMat({ map: fiberTex('#c4520e', ['#ec7418', '#d45e10', '#f8903a', '#a8420c', '#ffa850']), roughness: 0.6, clearcoat: 0.3, clearcoatRoughness: 0.35 }),
+    fiberPale: physMat({ map: fiberTex('#efe2c4', ['#fff6e2', '#e3d1a8', '#f6ead0', '#d8c294'], 3000), roughness: 0.4, clearcoat: 0.8, clearcoatRoughness: 0.15 }),
     pist: new THREE.MeshStandardMaterial({ map: speckleTex('#7fae36', ['#9cc64c', '#6b9a2c', '#b6d469', '#5e8a28', '#7a4f52'], 1400, 3, 9), roughness: 0.6 }),
-    cream: new THREE.MeshPhysicalMaterial({ map: speckleTex('#f7efe0', ['#8fbf3f', '#7aa836'], 90, 2, 5), roughness: 0.38, clearcoat: 0.5, sheen: 0.6, sheenColor: new THREE.Color(0xffffff) }),
-    creamFill: new THREE.MeshPhysicalMaterial({ color: 0xfbf3df, roughness: 0.5, sheen: 0.4 }),
-    cheese: new THREE.MeshPhysicalMaterial({ color: 0xf3e6c4, roughness: 0.4, clearcoat: 0.4 }),
+    cream: physMat({ map: speckleTex('#f7efe0', ['#8fbf3f', '#7aa836'], 90, 2, 5), roughness: 0.38, clearcoat: 0.5, sheen: 0.6, sheenColor: new THREE.Color(0xffffff) }),
+    creamFill: physMat({ color: 0xfbf3df, roughness: 0.5, sheen: 0.4 }),
+    cheese: physMat({ color: 0xf3e6c4, roughness: 0.4, clearcoat: 0.4 }),
     sesame: new THREE.MeshStandardMaterial({ map: sesameTex(), roughness: 0.5 }),
     biscuit: new THREE.MeshStandardMaterial({ color: 0xb27530, roughness: 0.6 }),
-    dough: new THREE.MeshPhysicalMaterial({ color: 0xf7f0e2, roughness: 0.28, clearcoat: 0.7, clearcoatRoughness: 0.18, sheen: 0.5, sheenColor: new THREE.Color(0xffffff) }),
-    ashta: new THREE.MeshPhysicalMaterial({ color: 0xfff7e3, roughness: 0.55, sheen: 0.6, sheenColor: new THREE.Color(0xfffbf0) }),
-    kernel: new THREE.MeshPhysicalMaterial({ color: 0x86b83a, roughness: 0.45, clearcoat: 0.4 }),
+    dough: physMat({ color: 0xf7f0e2, roughness: 0.28, clearcoat: 0.7, clearcoatRoughness: 0.18, sheen: 0.5, sheenColor: new THREE.Color(0xffffff) }),
+    ashta: physMat({ color: 0xfff7e3, roughness: 0.55, sheen: 0.6, sheenColor: new THREE.Color(0xfffbf0) }),
+    kernel: physMat({ color: 0x86b83a, roughness: 0.45, clearcoat: 0.4 }),
     sugar: new THREE.MeshStandardMaterial({ map: speckleTex('#e2b878', ['rgba(255,255,255,.7)', 'rgba(255,252,245,.55)', 'rgba(255,255,255,.4)'], 22000, 0.5, 1.6), roughness: 0.85 }),
   };
   const pistBits = new THREE.DodecahedronGeometry(0.018, 0);
@@ -330,8 +339,8 @@ export async function initVitrine({ canvas, trays, onTray, onSelect, onHover, re
       photoTex('assets/img/halawet-el-jibn.jpg', [985, 600, 110, 42], [3, 1]), // Teighülle mit Pistazienstaub
       photoTex('assets/img/halawet-el-jibn.jpg', [772, 468, 96, 100]),    // Ashta-Füllung
     ]);
-    M.mabTop = new THREE.MeshPhysicalMaterial({ map: mabTop, roughness: 0.5, clearcoat: 0.4 });
-    M.mabSide = new THREE.MeshPhysicalMaterial({ map: mabSide, roughness: 0.5, clearcoat: 0.6, clearcoatRoughness: 0.25 });
+    M.mabTop = physMat({ map: mabTop, roughness: 0.5, clearcoat: 0.4 });
+    M.mabSide = physMat({ map: mabSide, roughness: 0.5, clearcoat: 0.6, clearcoatRoughness: 0.25 });
     M.sesame = new THREE.MeshStandardMaterial({ map: barTop, roughness: 0.55 });
     M.dough.map = halSkin; M.dough.color.set(0xffffff); M.dough.needsUpdate = true;
     M.ashta.map = halEnd; M.ashta.color.set(0xffffff); M.ashta.needsUpdate = true;
@@ -397,7 +406,7 @@ export async function initVitrine({ canvas, trays, onTray, onSelect, onHover, re
       tray.add(makeTray('rect', silver));
       const W = 1.78, D = W * (t.photo.crop[3] - t.photo.crop[1]) / (t.photo.crop[2] - t.photo.crop[0]), KH = 0.05;
       const g = new THREE.Group();
-      const sideMat = new THREE.MeshPhysicalMaterial({ map: rowSideTexture('#c98a3a'), roughness: 0.5, clearcoat: 0.5 });
+      const sideMat = physMat({ map: rowSideTexture('#c98a3a'), roughness: 0.5, clearcoat: 0.5 });
       const body = new THREE.Mesh(new THREE.BoxGeometry(W, KH, D), [sideMat, sideMat, new THREE.MeshBasicMaterial({ visible: false }), sideMat, sideMat, sideMat]);
       body.position.y = 0.02 + KH / 2; body.castShadow = body.receiveShadow = true;
       g.add(body);
@@ -427,8 +436,8 @@ export async function initVitrine({ canvas, trays, onTray, onSelect, onHover, re
           const tex = reliefTextures(img, [sx, sy, sx + c * cw, sy + r * ch], t.photo.relief);
           const sideX = side.clone(); sideX.repeat.set(c, 1); sideX.needsUpdate = true;
           const sideZ = side.clone(); sideZ.repeat.set(r, 1); sideZ.needsUpdate = true;
-          const mx = new THREE.MeshPhysicalMaterial({ map: sideX, roughness: 0.5, clearcoat: 0.4 });
-          const mz = new THREE.MeshPhysicalMaterial({ map: sideZ, roughness: 0.5, clearcoat: 0.4 });
+          const mx = physMat({ map: sideX, roughness: 0.5, clearcoat: 0.4 });
+          const mz = physMat({ map: sideZ, roughness: 0.5, clearcoat: 0.4 });
           const hide = new THREE.MeshBasicMaterial({ visible: false });
           const box = new THREE.Mesh(new THREE.BoxGeometry(w, step, d), [mz, mz, hide, hide, mx, mx]);
           box.position.y = y0 + step / 2; box.castShadow = box.receiveShadow = true;
@@ -469,7 +478,7 @@ export async function initVitrine({ canvas, trays, onTray, onSelect, onHover, re
       });
       sideTex.repeat.set(10, 1);
       const side = new THREE.Mesh(new THREE.CylinderGeometry(RK, RK, KH, 128, 1, true),
-        new THREE.MeshPhysicalMaterial({ map: sideTex, roughness: 0.55, clearcoat: 0.4 }));
+        physMat({ map: sideTex, roughness: 0.55, clearcoat: 0.4 }));
       side.position.y = FLOOR + KH / 2;
       g.add(side);
 
@@ -477,7 +486,7 @@ export async function initVitrine({ canvas, trays, onTray, onSelect, onHover, re
       const SEG = lowPower ? 160 : 260;
       const topGeo = new THREE.PlaneGeometry(RK * 2, RK * 2, SEG, SEG);
       topGeo.rotateX(-Math.PI / 2);
-      const topMat = new THREE.MeshPhysicalMaterial({
+      const topMat = physMat({
         roughness: 0.5, clearcoat: 0.45, clearcoatRoughness: 0.22, transparent: false, alphaTest: 0.5,
         displacementScale: 0.05, displacementBias: -0.012, envMapIntensity: 0.35,
       });
@@ -563,7 +572,7 @@ export async function initVitrine({ canvas, trays, onTray, onSelect, onHover, re
       let y = 0;
       for (const [mat, h] of layers) { const b = new THREE.Mesh(new THREE.BoxGeometry(0.3, h, 0.3), mat); b.position.y = y + h / 2; y += h; sq.add(b); }
       sprinkle(sq, 30, 0.1, y + 0.005);
-      const plate = new THREE.Mesh(new THREE.CylinderGeometry(0.25, 0.21, 0.02, 40), new THREE.MeshPhysicalMaterial({ color: 0xffffff, roughness: 0.15, clearcoat: 1 }));
+      const plate = new THREE.Mesh(new THREE.CylinderGeometry(0.25, 0.21, 0.02, 40), physMat({ color: 0xffffff, roughness: 0.15, clearcoat: 1 }));
       plate.position.set(1.15, 0.013, 0.45); plate.receiveShadow = true; tray.add(plate);
       piece(tray, sq, 1.15, 0.45, 0.4, 0.026);   // liegt sichtbar ÜBER dem Teller (kein Flimmern)
     },
@@ -729,15 +738,34 @@ export async function initVitrine({ canvas, trays, onTray, onSelect, onHover, re
     return holder;
   }
 
-  // Tablett mit vielen Exemplaren eines echten Modells füllen (Geometrie wird geteilt)
+  // Tablett mit vielen Exemplaren eines echten Modells füllen: je Teil-Mesh ein InstancedMesh,
+  // dadurch ein Zeichenaufruf pro Tablett statt einer pro Stück (wichtig für flüssiges Scrollen am Handy)
   function glbTray(tray, src, t) {
     tray.add(makeTray('rect', t.glbTray === 'silver' ? silver : brass));
     const proto = prepareGlb(src, t.glbFit || {});
+    proto.updateMatrixWorld(true);
+    const parts = [];
+    proto.traverse((o) => { if (o.isMesh) parts.push(o); });
     const [cols, rows] = t.glbGrid || [6, 4];
+    const spots = [];
     grid(cols, rows, 1.62, 1.0, (x, z) => {
-      const g = proto.clone(true);
-      piece(tray, g, x + rand(-0.01, 0.01), z + rand(-0.01, 0.01), (t.glbSpin ?? true) ? rand(0, TAU) : rand(-0.12, 0.12));
+      const ry = (t.glbSpin ?? true) ? rand(0, TAU) : rand(-0.12, 0.12);
+      spots.push(new THREE.Matrix4().compose(
+        new THREE.Vector3(x + rand(-0.01, 0.01), 0.022, z + rand(-0.01, 0.01)),
+        new THREE.Quaternion().setFromAxisAngle(new THREE.Vector3(0, 1, 0), ry),
+        new THREE.Vector3(1, 1, 1)));
     });
+    const g = new THREE.Group();
+    const m = new THREE.Matrix4();
+    for (const part of parts) {
+      const inst = new THREE.InstancedMesh(part.geometry, part.material, spots.length);
+      spots.forEach((spot, k) => inst.setMatrixAt(k, m.multiplyMatrices(spot, part.matrixWorld)));
+      inst.instanceMatrix.needsUpdate = true;
+      inst.computeBoundingSphere();
+      inst.castShadow = inst.receiveShadow = true;
+      g.add(inst);
+    }
+    piece(tray, g, 0, 0, 0, 0);
   }
 
   await document.fonts?.ready;
@@ -769,12 +797,28 @@ export async function initVitrine({ canvas, trays, onTray, onSelect, onHover, re
       for (let k = pieceRoots.length - 1; k >= 0; k--) if (pieceRoots[k].userData.tray === i) pieceRoots.splice(k, 1);
       for (const c of [...tray.children]) tray.remove(c);
       glbTray(tray, g.scene, t);
+      warm();
+      wake = clock.elapsedTime + 0.2;
     }).catch((err) => console.warn('GLB nicht geladen, nachgebautes Modell bleibt:', t.glb, err));
   });
 
+  // Shader und Texturen schon vorab zur Grafikkarte schicken – sonst ruckelt es beim ersten Hineinfahren
+  function warm() {
+    scene.traverse((o) => {
+      for (const m of [].concat(o.material || [])) {
+        for (const k of ['map', 'normalMap', 'displacementMap', 'alphaMap', 'roughnessMap']) {
+          if (m[k] && m[k].version > 0) renderer.initTexture(m[k]);
+        }
+      }
+    });
+    (renderer.compileAsync ? renderer.compileAsync(scene, camera) : Promise.resolve(renderer.compile(scene, camera))).catch(() => {});
+  }
+  warm();
+  [1200, 3500, 7000].forEach((ms) => setTimeout(warm, ms));   // Fotos/Reliefs, die inzwischen geladen wurden
+
   // ── Zustand ──
   let width = 1, height = 1, zoomTarget = 0, zoom = 0, running = false, raf = 0;
-  let topInset = 0;   // Handy: so viele Pixel oben gehören dem Begrüßungstext – die Theke beginnt erst darunter
+  let topInset = 0, lastDraw = 0, wake = 0;   // Handy: so viele Pixel oben gehören dem Begrüßungstext – die Theke beginnt erst darunter
   const glassTop = new THREE.Vector3();
   let trayPos = 0, trayTarget = 0, dragging = false;   // Position entlang der Theke (in Tabletts)
   let selected = null, hovered = null, current = 0;
@@ -795,6 +839,11 @@ export async function initVitrine({ canvas, trays, onTray, onSelect, onHover, re
     if (!running) return;
     raf = requestAnimationFrame(frame);
     const dt = Math.min(clock.getDelta(), 0.05), t = clock.elapsedTime;
+    // Ruhe-Erkennung: steht alles still, wird nur noch selten (für nachgeladene Bilder) neu gezeichnet
+    const moving = Math.abs(zoomTarget - zoom) > 0.0004 || Math.abs(trayTarget - trayPos) > 0.0004 || dragging
+      || Math.abs(pointer.x - pointer.sx) > 0.002 || Math.abs(pointer.y - pointer.sy) > 0.002 || t < wake;
+    if (!moving && t - lastDraw < 0.5) return;
+    lastDraw = t;
     zoom += (zoomTarget - zoom) * Math.min(1, dt * 6);
     if (!dragging) trayPos += (trayTarget - trayPos) * Math.min(1, dt * 7);
 
@@ -974,7 +1023,7 @@ export async function initVitrine({ canvas, trays, onTray, onSelect, onHover, re
   addEventListener('resize', resize);
 
   return {
-    setZoom(v) { zoomTarget = clamp01(v); },
+    setZoom(v) { zoomTarget = clamp01(v); wake = clock.elapsedTime + 0.3; },
     setTopInset(px) { topInset = px; },
     goTo,
     get index() { return trayTarget; },
