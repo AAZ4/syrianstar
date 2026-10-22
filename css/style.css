@@ -125,6 +125,14 @@ em { font-style: italic; color: var(--brass); }
 
 /* ═════════ Hero: Die Vitrine ═════════ */
 .vitrine { position: relative; height: 230vh; height: 230svh; }   /* Hineinfahren + Haltezone */
+/* Natives Einrasten: Seite ruht am Anfang oder an der Theke; starkes Wischen kann die Theke nicht überspringen.
+   Alles nach der Theke ist ein großer Bereich, in dem frei gescrollt wird. */
+html.snap { scroll-snap-type: y mandatory; }
+.snap-point { position: absolute; left: 0; width: 1px; height: 1px; pointer-events: none; scroll-snap-align: start; }
+.snap-point--top { top: 0; }
+.snap-point--hold { top: 65vh; scroll-snap-stop: always; }
+html.snap .after-vitrine { scroll-snap-align: start; }
+html.snap .footer { scroll-snap-align: end; }
 .vitrine__sticky { position: sticky; top: 0; height: 100vh; height: 100svh; overflow: hidden; }
 .vitrine__wall {
   position: absolute; inset: 0;

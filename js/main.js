@@ -182,7 +182,7 @@ async function initVitrine() {
 
   // Senkrechtes Scrollen fährt in die Theke hinein (ZOOM) und rastet dort am Gericht ein (HOLD).
   // In der Theke wird seitwärts gewischt; erst deutliches Weiterscrollen verlässt die Theke.
-  const ZOOM = 0.65, HOLD_FROM = 0.15, HOLD_TO = 1.2;   // in Bildschirmhöhen ab Sektionsanfang
+  const ZOOM = 0.65;   // in Bildschirmhöhen ab Sektionsanfang: hier ist die Theke ganz herangezoomt
   const onScroll = () => {
     const r = section.getBoundingClientRect();
     const p = Math.min(1, Math.max(0, -r.top / (innerHeight * ZOOM)));
@@ -197,56 +197,15 @@ async function initVitrine() {
   down.addEventListener('click', () => scrollTo({ top: section.offsetTop + section.offsetHeight, behavior: reducedMotion ? 'auto' : 'smooth' }));
   addEventListener('scroll', onScroll, { passive: true });
 
-  // Bremse: Wer mit Schwung über die Theke hinweg scrollt (egal wie stark), bleibt an der Theke stehen.
-  // Erst eine neue Scrollbewegung führt weiter. Gilt nur für Scrollen mit Finger, Maus oder Tastatur –
-  // ein Klick auf einen Menüpunkt springt weiterhin direkt zum Ziel.
-  let lastY = scrollY, lastInput = 0, locked = false;
-  const markInput = () => { lastInput = performance.now(); };
-  ['wheel', 'touchmove', 'keydown'].forEach((ev) => addEventListener(ev, markInput, { passive: true }));
-  let lastTouch = 0;
-  addEventListener('touchmove', () => { lastTouch = performance.now(); }, { passive: true });
-  // Mausrad/Touchpad: Schwung während der Bremse einfach schlucken (keine Layoutänderung → kein Flackern)
-  addEventListener('wheel', (e) => { if (locked && Math.abs(e.deltaY) > Math.abs(e.deltaX)) e.preventDefault(); }, { passive: false });
-  const lockAt = (y) => {
-    locked = true;
-    const touch = performance.now() - lastTouch < 900;
-    const root = document.documentElement;
-    // Finger-Schwung lässt sich nur so stoppen; am Handy gibt es keine Scrollleiste, also verschiebt sich nichts
-    if (touch) root.style.overflow = document.body.style.overflow = 'hidden';
-    scrollTo({ top: y, behavior: 'instant' });
-    setTimeout(() => {
-      if (touch) root.style.overflow = document.body.style.overflow = '';
-      locked = false; lastY = scrollY;
-    }, touch ? 650 : 700);
-  };
-  addEventListener('scroll', () => {
-    if (locked) return;
-    const y = scrollY, hold = section.offsetTop + innerHeight * ZOOM;
-    const dy = y - lastY;
-    // Wo wäre die Seite beim nächsten Bild? Liegt die Theke dazwischen, jetzt anhalten (kein Vorbeischießen + Zurückspringen)
-    const next = y + dy * 1.5;
-    const hits = (lastY < hold - 4 && next >= hold - 4) || (lastY > hold + 4 && next <= hold + 4);
-    if (hits && Math.abs(dy) > 6 && performance.now() - lastInput < 900 && $('#pieceModal').hidden) lockAt(hold);
-    else lastY = y;
-  }, { passive: true });
-  addEventListener('resize', onScroll);
-  onScroll();
-
-  // Einrasten: kommt das Scrollen im Bereich der Theke zur Ruhe, wird sie genau angefahren
-  let touching = false, snapTimer = 0;
-  const snap = () => {
-    if (touching) return;
-    const offset = scrollY - section.offsetTop;
-    const hold = innerHeight * ZOOM;
-    if (offset > innerHeight * HOLD_FROM && offset < innerHeight * HOLD_TO && Math.abs(offset - hold) > 2) {
-      scrollTo({ top: section.offsetTop + hold, behavior: reducedMotion ? 'auto' : 'smooth' });
-    }
-  };
-  const later = () => { clearTimeout(snapTimer); snapTimer = setTimeout(snap, 140); };
-  if ('onscrollend' in window) addEventListener('scrollend', later);
-  else addEventListener('scroll', later, { passive: true });
-  addEventListener('touchstart', () => { touching = true; clearTimeout(snapTimer); }, { passive: true });
-  addEventListener('touchend', () => { touching = false; if (!('onscrollend' in window)) later(); }, { passive: true });
+  // Einrasten und Bremsen übernimmt der Browser selbst (CSS Scroll Snap, siehe .snap-point in style.css):
+  // Er hält auch bei starkem Wischen an der Theke an – ohne dass ein Skript während des Scrollens eingreift
+  // (das hatte am iPhone weiße Flächen und Springen verursacht). Hier nur der Rastpunkt genau dort,
+  // wo die Theke ganz herangezoomt ist.
+  const holdMark = $('#snapHold');
+  const placeHold = () => { holdMark.style.top = `${Math.round(innerHeight * ZOOM)}px`; };
+  placeHold();
+  addEventListener('resize', placeHold);
+  document.documentElement.classList.add('snap');
   new IntersectionObserver(([e]) => (e.isIntersecting ? api.start() : api.stop())).observe(section);
 }
 
