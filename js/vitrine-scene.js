@@ -890,6 +890,9 @@ export async function initVitrine({ canvas, trays, onTray, onSelect, onHover, re
     }
 
     // Licht steht pro Tablett fest (nicht mit der Kamera mitwandern) – so bleiben die Schatten gültig
+    // Schatten neu: in den ersten Sekunden und bei jedem Ruhe-Bild (alle 0,5 s). So passen sie auch zu Fotos/Reliefs,
+    // die erst später geladen werden – vorher blieb ein veralteter Schatten stehen = dunkle Theke bis zum ersten Wischen.
+    if (t < 5 || !moving) reshadow();
     const lx = Math.round(trayTarget) * SPACING;
     if (key.target.position.x !== lx) { key.position.set(lx + 1.5, 6, 4.5); key.target.position.set(lx, 0, 0); key.target.updateMatrixWorld(); reshadow(); }
     inner.position.set(cx, 0.85, 0.1);

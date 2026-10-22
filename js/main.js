@@ -114,7 +114,8 @@ async function initVitrine() {
   let api = null, current = 0;
 
   const showTray = (i) => {
-    if (i !== 0) caption.classList.add('swiped');   // Wisch-Hinweis nach dem ersten Wechsel ausblenden
+    if (i !== 0) stage.classList.add('swiped');   // Wisch-Hinweis nach dem ersten Wechsel ausblenden
+    $('#vDots').innerHTML = TRAYS.map((_, k) => `<i class="${k === i ? 'on' : ''}"></i>`).join('');
     current = i;
     detail.hidden = true; stage.classList.remove('is-tasting');
     const t = TRAYS[i];
@@ -189,6 +190,7 @@ async function initVitrine() {
     api.setZoom(p);
     intro.classList.toggle('is-hidden', p > 0.3);
     caption.classList.toggle('is-shown', p > 0.6);
+    stage.classList.toggle('at-counter', p > 0.95);
     // Hinweis „weiter nach unten“, solange man an der Theke steht
     const off = scrollY - section.offsetTop, hold = innerHeight * ZOOM;
     down.classList.toggle('is-shown', p > 0.95 && off < hold + innerHeight * 0.25);
@@ -205,7 +207,15 @@ async function initVitrine() {
   const placeHold = () => { holdMark.style.top = `${Math.round(innerHeight * ZOOM)}px`; };
   placeHold();
   addEventListener('resize', placeHold);
-  document.documentElement.classList.add('snap');
+  // Nur rund um die Theke einrasten. iPhones bremsen den Schwung auf der ganzen Seite ab, solange
+  // Einrasten aktiv ist – deshalb weiter unten wieder ausschalten (dort ist jede Position erlaubt, nichts springt).
+  const after = $('.after-vitrine');
+  const snapZone = () => {
+    const on = scrollY < after.offsetTop + innerHeight * 0.6;
+    document.documentElement.classList.toggle('snap', on);
+  };
+  snapZone();
+  addEventListener('scroll', snapZone, { passive: true });
   new IntersectionObserver(([e]) => (e.isIntersecting ? api.start() : api.stop())).observe(section);
 }
 

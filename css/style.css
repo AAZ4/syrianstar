@@ -176,7 +176,17 @@ html.snap .footer { scroll-snap-align: end; }
 .vitrine__label small { grid-column: 1 / -1; color: var(--ink-soft); font-size: 13px; }
 .vitrine__swipe { position: absolute; left: 50%; top: -34px; translate: -50% 0; white-space: nowrap; font-size: 12.5px; font-weight: 600; letter-spacing: .04em; color: var(--ink-soft); background: rgba(255, 253, 248, .8); padding: 4px 12px; border-radius: 999px; animation: nudge 2.4s ease-in-out infinite; }
 
-.swiped .vitrine__swipe { display: none; }
+/* Wisch-Hinweis mitten auf der Theke, nur bis zum ersten Wischen */
+.swipe-hint { position: absolute; left: 50%; top: 60%; z-index: 3; translate: -50% -50%; display: grid; justify-items: center; gap: 6px; padding: 14px 18px 12px; border-radius: 20px; background: rgba(43, 33, 24, .55); color: var(--cream); font-size: 13px; font-weight: 600; letter-spacing: .03em; pointer-events: none; opacity: 0; transition: opacity .5s var(--ease); }
+.swipe-hint svg { width: 64px; height: 64px; fill: none; stroke: var(--cream); stroke-width: 2.4; stroke-linecap: round; stroke-linejoin: round; }
+.swipe-hint__hand { fill: rgba(255, 253, 248, .95); stroke: none; animation: swipe 1.8s ease-in-out infinite; transform-origin: 32px 40px; }
+.swipe-hint__arrows { stroke: var(--brass-2); }
+@keyframes swipe { 0%, 100% { transform: translateX(-10px) rotate(-8deg); } 50% { transform: translateX(10px) rotate(8deg); } }
+.at-counter:not(.swiped):not(.is-tasting) .swipe-hint { opacity: 1; transition-delay: .6s; }
+/* Punkte: wie viele Gerichte es gibt und wo man ist */
+.vitrine__dots { grid-column: 1 / -1; display: flex; gap: 5px; margin-top: 6px; }
+.vitrine__dots i { width: 6px; height: 6px; border-radius: 3px; background: var(--line); transition: width .3s var(--ease), background .3s; }
+.vitrine__dots i.on { width: 18px; background: var(--brass); }
 /* kleiner Pfeil rechts über der Leiste: „hier geht es weiter nach unten“ */
 .vitrine__down { position: absolute; right: 0; top: -54px; width: 42px; height: 42px; border-radius: 50%; display: grid; place-items: center; cursor: pointer; padding: 0; border: 1px solid var(--line); background: rgba(255, 253, 248, .94); box-shadow: var(--shadow); opacity: 0; transition: opacity .4s var(--ease) 1.2s; }
 .vitrine__down svg { width: 20px; height: 20px; fill: none; stroke: var(--brass); stroke-width: 2.2; stroke-linecap: round; stroke-linejoin: round; animation: bob 1.6s infinite; }
@@ -301,7 +311,8 @@ html.snap .footer { scroll-snap-align: end; }
 .stats b { font: 600 clamp(44px, 5vw, 64px)/1 var(--f-display); color: var(--brass); }
 .stats span { color: var(--ink-soft); font-size: 15px; }
 @media (max-width: 900px) {
-  .cities { grid-template-columns: none; grid-auto-flow: column; grid-auto-columns: 78%; overflow-x: auto; scroll-snap-type: x mandatory; scrollbar-width: none; margin-inline: calc(var(--gutter) * -1); padding-inline: var(--gutter); scroll-padding-inline: var(--gutter); }
+  .cities .reveal { opacity: 1; transform: none; transition: none; }
+  .cities { grid-template-columns: none; grid-auto-flow: column; grid-auto-columns: 78%; overflow-x: auto; overflow-y: hidden; touch-action: pan-x pan-y; overscroll-behavior-x: contain; scroll-snap-type: x mandatory; scrollbar-width: none; margin-inline: calc(var(--gutter) * -1); padding-inline: var(--gutter); scroll-padding-inline: var(--gutter); }
   .cities::-webkit-scrollbar { display: none; }
   .city { scroll-snap-align: start; }
   .stats { grid-template-columns: 1fr; }
