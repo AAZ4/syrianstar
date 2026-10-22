@@ -203,15 +203,21 @@ async function initVitrine() {
   let lastY = scrollY, lastInput = 0, locked = false;
   const markInput = () => { lastInput = performance.now(); };
   ['wheel', 'touchmove', 'keydown'].forEach((ev) => addEventListener(ev, markInput, { passive: true }));
+  let lastTouch = 0;
+  addEventListener('touchmove', () => { lastTouch = performance.now(); }, { passive: true });
+  // Mausrad/Touchpad: Schwung während der Bremse einfach schlucken (keine Layoutänderung → kein Flackern)
+  addEventListener('wheel', (e) => { if (locked && Math.abs(e.deltaY) > Math.abs(e.deltaX)) e.preventDefault(); }, { passive: false });
   const lockAt = (y) => {
     locked = true;
+    const touch = performance.now() - lastTouch < 900;
     const root = document.documentElement;
-    root.style.overflow = document.body.style.overflow = 'hidden';   // stoppt den Schwung (auch am iPhone)
+    // Finger-Schwung lässt sich nur so stoppen; am Handy gibt es keine Scrollleiste, also verschiebt sich nichts
+    if (touch) root.style.overflow = document.body.style.overflow = 'hidden';
     scrollTo({ top: y, behavior: 'instant' });
     setTimeout(() => {
-      root.style.overflow = document.body.style.overflow = '';
+      if (touch) root.style.overflow = document.body.style.overflow = '';
       locked = false; lastY = scrollY;
-    }, 650);
+    }, touch ? 650 : 700);
   };
   addEventListener('scroll', () => {
     if (locked) return;

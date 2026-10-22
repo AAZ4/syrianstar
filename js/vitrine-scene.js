@@ -228,6 +228,7 @@ export async function initVitrine({ canvas, trays, onTray, onSelect, onHover, re
   // Licht
   scene.add(new THREE.HemisphereLight(0xfff6e8, 0x8a6a4a, 0.55));
   const key = new THREE.DirectionalLight(0xfff1dc, 2.4);
+  key.position.set(1.5, 6, 4.5);   // von Anfang an richtig stehen (sonst war die Theke bis zum ersten Wischen dunkler)
   key.castShadow = true;
   key.shadow.mapSize.set(lowPower ? 1024 : 2048, lowPower ? 1024 : 2048);
   Object.assign(key.shadow.camera, { left: -3.2, right: 3.2, top: 2.5, bottom: -2.5, near: 0.5, far: 20 });
@@ -834,8 +835,13 @@ export async function initVitrine({ canvas, trays, onTray, onSelect, onHover, re
 
   function resize() {
     const r = canvas.parentElement.getBoundingClientRect();
-    width = Math.max(1, r.width); height = Math.max(1, r.height);
+    const w = Math.max(1, Math.round(r.width)), h = Math.max(1, Math.round(r.height));
+    // Gleiche Größe → nichts tun. (Handys melden beim Scrollen ständig „resize“, wenn die Adressleiste
+    // ein-/ausfährt; jedes setSize leert die Zeichenfläche → die Theke hat dabei geflackert.)
+    if (w === width && h === height) return;
+    width = w; height = h;
     renderer.setSize(width, height, false);
+    wake = clock.elapsedTime + 0.3;   // sofort neu zeichnen
     camera.aspect = width / height;
     camera.updateProjectionMatrix();
   }
