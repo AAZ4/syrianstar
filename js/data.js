@@ -115,7 +115,7 @@ export const SWEETS = [
     de: 'Die „Ausgegossene“',
     text: 'Feiner, in Butter gerösteter Kadayif-Teig, geschichtet mit dicker Ashta-Creme und üppig mit Pistazien bestreut.',
     zutaten: ['feiner Kadayif', 'Ashta-Creme', 'Butterschmalz', 'Pistazien', 'Sirup'],
-    price: '24 € / kg', allergens: 'A,B,C', shape: 'square',
+    price: '24 € / kg', allergens: 'A,B,C', shape: 'square', img: 'assets/img/teller/madlouka.jpg',
   },
   {
     id: 'namoura', ar: 'نمورة', name: 'Namoura', group: 'griess',
