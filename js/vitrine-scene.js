@@ -203,8 +203,24 @@ function rowSideTexture(base = '#b8732a') {
 }
 
 // ── Szene ────────────────────────────────────────────────────
-export async function initVitrine({ canvas, trays, onTray, onSelect, onHover, reducedMotion = false }) {
+export async function initVitrine({ canvas, trays, onTray, onSelect, onHover, onProgress, reducedMotion = false }) {
   const N = trays.length;
+  // Ladefortschritt: jede Datei, auf die die Theke wartet, ist eine Aufgabe
+  let pending = 0, finished = 0, readyResolve;
+  const ready = new Promise((r) => { readyResolve = r; });
+  const report = () => { onProgress?.(pending ? finished / pending : 0); };
+  const task = () => {
+    pending++; report();
+    let done = false;
+    return () => { if (done) return; done = true; finished++; report(); if (finished === pending) setTimeout(() => readyResolve(), 0); };
+  };
+  // Bild mitzählen; erst als fertig melden, NACHDEM sein onload (Relief berechnen, Textur setzen) gelaufen ist
+  const trackImg = (img) => {
+    const fin = task();
+    img.addEventListener('load', () => setTimeout(fin, 0));
+    img.addEventListener('error', fin);
+    return img;
+  };
   const isSmall = () => window.innerWidth < 760;
   const lowPower = isSmall();
 
@@ -415,7 +431,7 @@ export async function initVitrine({ canvas, trays, onTray, onSelect, onHover, re
       const body = new THREE.Mesh(new THREE.BoxGeometry(W, KH, D), [sideMat, sideMat, new THREE.MeshBasicMaterial({ visible: false }), sideMat, sideMat, sideMat]);
       body.position.y = 0.02 + KH / 2; body.castShadow = body.receiveShadow = true;
       g.add(body);
-      const img = new Image();
+      const img = trackImg(new Image());
       img.onload = () => {
         const top = reliefPlane(W, D, reliefTextures(img, t.photo.crop, t.photo.relief), { scale: 0.03 });
         top.position.y = 0.02 + KH;
@@ -432,7 +448,7 @@ export async function initVitrine({ canvas, trays, onTray, onSelect, onHover, re
       const cw = (crop[2] - crop[0]) / GC, ch = (crop[3] - crop[1]) / GR;   // Pixel pro Stück im Foto
       const g = new THREE.Group();
       const side = rowSideTexture();
-      const img = new Image();
+      const img = trackImg(new Image());
       img.onload = () => {
         levels.forEach(([c, r], k) => {
           const w = c * cell, d = r * cell, y0 = 0.02 + k * step;
@@ -506,7 +522,7 @@ export async function initVitrine({ canvas, trays, onTray, onSelect, onHover, re
         c.fillStyle = '#fff'; c.beginPath(); c.arc(n / 2, n / 2, n / 2 - 1, 0, TAU); c.fill();
       }, { srgb: false });
 
-      const img = new Image();
+      const img = trackImg(new Image());
       img.onload = () => {
         const KF = 0.875;                                         // Anteil der Künefe am Foto-Durchmesser
         const N = 1024, c = document.createElement('canvas');
@@ -797,6 +813,7 @@ export async function initVitrine({ canvas, trays, onTray, onSelect, onHover, re
   // damit die Theke nicht auf alle Dateien warten muss
   trays.forEach((t, i) => {
     if (!t.glb) return;
+    const fin = task();
     gltf.loadAsync(t.glb).then((g) => {
       const tray = trayGroups[i];
       if (selected?.userData.tray === i) deselect();
@@ -805,7 +822,7 @@ export async function initVitrine({ canvas, trays, onTray, onSelect, onHover, re
       glbTray(tray, g.scene, t);
       warm();
       wake = clock.elapsedTime + 0.2;
-    }).catch((err) => console.warn('GLB nicht geladen, nachgebautes Modell bleibt:', t.glb, err));
+    }).catch((err) => console.warn('GLB nicht geladen, nachgebautes Modell bleibt:', t.glb, err)).finally(fin);
   });
 
   // Shader und Texturen schon vorab zur Grafikkarte schicken – sonst ruckelt es beim ersten Hineinfahren
@@ -821,7 +838,11 @@ export async function initVitrine({ canvas, trays, onTray, onSelect, onHover, re
     reshadow();
   }
   warm();
-  [1200, 3500, 7000].forEach((ms) => setTimeout(warm, ms));   // Fotos/Reliefs, die inzwischen geladen wurden
+  const allLoaded = (pending ? ready : Promise.resolve()).then(async () => {
+    warm();
+    await new Promise((r) => requestAnimationFrame(() => requestAnimationFrame(r)));   // zwei Bilder Zeit zum Zeichnen
+  });
+  [3500, 7000].forEach((ms) => setTimeout(warm, ms));   // Fotos/Reliefs, die inzwischen geladen wurden
 
   // ── Zustand ──
   let width = 1, height = 1, zoomTarget = 0, zoom = 0, running = false, raf = 0;
@@ -1041,6 +1062,7 @@ export async function initVitrine({ canvas, trays, onTray, onSelect, onHover, re
   return {
     setZoom(v) { zoomTarget = clamp01(v); wake = clock.elapsedTime + 0.3; },
     setTopInset(px) { topInset = px; },
+    ready: allLoaded,   // erfüllt, sobald Fotos, Reliefs und Modelle der Theke fertig sind
     goTo,
     get index() { return trayTarget; },
     selectFirstOf(i) { const p = pieceRoots.find((q) => q.userData.tray === i); if (p) select(p); },

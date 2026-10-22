@@ -108,6 +108,18 @@ function initPieceModal() {
   media.addEventListener('pointercancel', end);
 }
 
+// ─── Ladebildschirm ───
+const loader = $('#loader');
+const loaderProgress = (f) => { const bar = $('#loaderBar'); if (bar) bar.style.width = `${Math.round(15 + f * 85)}%`; };
+function hideLoader() {
+  if (!loader || loader.classList.contains('is-done')) return;
+  loaderProgress(1);
+  loader.classList.add('is-done');
+  document.documentElement.classList.remove('is-loading');
+  setTimeout(() => loader.remove(), 700);
+}
+setTimeout(hideLoader, 12000);   // Sicherheitsnetz, falls irgendetwas hängt
+
 async function initVitrine() {
   const section = $('#vitrine'), stage = $('#vitrineStage'), canvas = $('#vitrineCanvas');
   const intro = $('#vIntro'), caption = $('#vCaption'), detail = $('#vDetail');
@@ -163,7 +175,9 @@ async function initVitrine() {
 
   try {
     const { initVitrine: init } = await import('./vitrine-scene.js');
-    api = await init({ canvas, trays: TRAYS, reducedMotion, onTray: showTray, onSelect: showDetail });
+    api = await init({ canvas, trays: TRAYS, reducedMotion, onTray: showTray, onSelect: showDetail, onProgress: loaderProgress });
+    // Ladebildschirm ausblenden, sobald alles da ist – spätestens nach 8 Sekunden (langsames Netz)
+    Promise.race([api.ready, new Promise((r) => setTimeout(r, 8000))]).then(hideLoader);
     // Handy: Theke beginnt immer unterhalb des Begrüßungstexts – egal wie hoch oder schmal der Bildschirm ist
     const fitIntro = () => {
       const r = intro.getBoundingClientRect(), s = stage.getBoundingClientRect();
@@ -175,6 +189,7 @@ async function initVitrine() {
   } catch (err) {
     console.warn('3D nicht verfügbar:', err);
     stage.classList.add('no-webgl');
+    hideLoader();
     const fb = $('#vFallback');
     fb.hidden = false;
     fb.innerHTML = TRAYS.map((t) => `<a href="#sweet-${t.id}">${t.img ? `<img src="${t.img}" alt="" loading="lazy">` : ''}<b>${esc(t.name)}</b><span lang="ar" dir="rtl">${t.ar}</span></a>`).join('');
@@ -211,7 +226,7 @@ async function initVitrine() {
   // Einrasten aktiv ist – deshalb weiter unten wieder ausschalten (dort ist jede Position erlaubt, nichts springt).
   const after = $('.after-vitrine');
   const snapZone = () => {
-    const on = scrollY < after.offsetTop + innerHeight * 0.6;
+    const on = scrollY < after.offsetTop - 4;   // ab dem ersten Abschnitt nach der Theke wieder freies Scrollen
     document.documentElement.classList.toggle('snap', on);
   };
   snapZone();
