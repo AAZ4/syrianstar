@@ -108,15 +108,24 @@ function initPieceModal() {
   media.addEventListener('pointercancel', end);
 }
 
-// ─── Ladebildschirm ───
+// ─── Ladebildschirm: Stern zeichnet sich mit dem Fortschritt, dann öffnen sich die Türen ───
 const loader = $('#loader');
-const loaderProgress = (f) => { const bar = $('#loaderBar'); if (bar) bar.style.width = `${Math.round(15 + f * 85)}%`; };
+const shownAt = performance.now();
+const loaderProgress = (f) => { loader?.style.setProperty('--p', Math.max(0.08, Math.min(1, f)).toFixed(3)); };
+loaderProgress(0);
 function hideLoader() {
-  if (!loader || loader.classList.contains('is-done')) return;
+  if (!loader || loader.classList.contains('is-ready')) return;
   loaderProgress(1);
-  loader.classList.add('is-done');
-  document.documentElement.classList.remove('is-loading');
-  setTimeout(() => loader.remove(), 700);
+  // mindestens ~1,4 s zeigen, damit die Animation nicht hektisch wirkt
+  const wait = Math.max(0, 1400 - (performance.now() - shownAt));
+  setTimeout(() => {
+    loader.classList.add('is-ready');                       // Stern landet in der Mitte
+    setTimeout(() => {
+      loader.classList.add('is-done');                      // Türen öffnen sich
+      document.documentElement.classList.remove('is-loading');
+      setTimeout(() => loader.remove(), 1200);
+    }, reducedMotion ? 0 : 650);
+  }, wait);
 }
 setTimeout(hideLoader, 12000);   // Sicherheitsnetz, falls irgendetwas hängt
 
