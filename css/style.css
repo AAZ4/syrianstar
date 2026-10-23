@@ -250,13 +250,13 @@ html.is-loading, html.is-loading body { overflow: hidden; }
 .loader__star { width: 168px; height: 168px; overflow: visible; filter: drop-shadow(0 8px 22px rgba(58, 38, 24, .18)); }
 /* Linien zeichnen sich mit dem Ladefortschritt */
 .loader__lines > * { stroke-dasharray: 100; stroke-dashoffset: calc(100 - 100 * var(--p)); transition: stroke-dashoffset .6s var(--ease); }
-.loader__lines { transform-origin: 100px 100px; animation: spin 24s linear infinite; }
-.loader__core { transform-origin: 100px 97px; transform: scale(0); opacity: 0; transition: transform .6s cubic-bezier(.3, 1.6, .5, 1), opacity .3s; }
+.loader__core .f-l { fill: url(#lgL); }
+.loader__core .f-d { fill: url(#lgD); }
+.loader__core { transform-origin: 100px 104px; transform: scale(.6); opacity: calc(var(--p) * .25); transition: transform .6s cubic-bezier(.3, 1.6, .5, 1), opacity .4s; }
 .loader__ar { margin: 22px 0 4px; font: 600 30px/1.2 var(--f-ar); color: var(--brass); opacity: 0; animation: rise-in .9s var(--ease) .2s forwards; }
 .loader__name { margin: 0; font: 600 15px/1 var(--f-body); letter-spacing: .42em; margin-right: -.42em; text-transform: uppercase; color: var(--ink); opacity: 0; animation: rise-in .9s var(--ease) .45s forwards; }
 .loader__tag { margin: 14px 0 0; font: italic 500 17px/1 var(--f-display); color: var(--ink-soft); opacity: 0; animation: rise-in .9s var(--ease) .7s forwards; }
 @keyframes rise-in { from { opacity: 0; transform: translateY(8px); } to { opacity: 1; transform: none; } }
-@keyframes spin { to { transform: rotate(360deg); } }
 /* fertig: der Stern aus dem Logo landet in der Mitte und leuchtet kurz … */
 .loader.is-ready .loader__core { transform: scale(1); opacity: 1; }
 .loader.is-ready .loader__star { filter: drop-shadow(0 0 24px rgba(217, 181, 106, .75)); transition: filter .6s; }
@@ -265,7 +265,6 @@ html.is-loading, html.is-loading body { overflow: hidden; }
 .loader.is-done .loader__door--l { transform: translateX(-101%); }
 .loader.is-done .loader__door--r { transform: translateX(101%); }
 @media (prefers-reduced-motion: reduce) {
-  .loader__lines { animation: none; }
   .loader.is-done { opacity: 0; transition: opacity .4s; }
   .loader.is-done .loader__door { transform: none; }
 }

@@ -17,7 +17,7 @@
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,500;0,600;0,700;1,500;1,600&family=Manrope:wght@400;500;600;700&family=Reem+Kufi:wght@400..700&display=swap" rel="stylesheet">
-  <link rel="stylesheet" href="css/style.css?v=202610230900">
+  <link rel="stylesheet" href="css/style.css?v=202610231000">
 
   <script type="importmap">
     { "imports": {
@@ -56,15 +56,28 @@
     <div class="loader__inner">
       <svg class="loader__star" viewBox="0 0 200 200" aria-hidden="true">
         <defs>
-          <linearGradient id="lg" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#e6c983"/><stop offset=".55" stop-color="#b08a3e"/><stop offset="1" stop-color="#8a6a2c"/></linearGradient>
+          <linearGradient id="lgL" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#fbe7a1"/><stop offset=".6" stop-color="#e0b450"/><stop offset="1" stop-color="#b98a2c"/></linearGradient>
+          <linearGradient id="lgD" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#d9a63f"/><stop offset=".6" stop-color="#a8761f"/><stop offset="1" stop-color="#6f4a12"/></linearGradient>
+          <linearGradient id="lgS" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#e6c983"/><stop offset="1" stop-color="#8a6a2c"/></linearGradient>
         </defs>
-        <g class="loader__lines" fill="none" stroke="url(#lg)" stroke-width="1.6" stroke-linejoin="round">
-          <path pathLength="100" d="M45 45H155V155H45Z"/>
-          <path pathLength="100" d="M100 22L178 100L100 178L22 100Z"/>
-          <circle pathLength="100" cx="100" cy="100" r="46"/>
-          <circle pathLength="100" cx="100" cy="100" r="88" stroke-width="1"/>
+        <!-- Umriss des Logo-Sterns zeichnet sich mit dem Ladefortschritt -->
+        <g class="loader__lines" fill="none" stroke="url(#lgS)" stroke-linejoin="round">
+          <path pathLength="100" stroke-width="2" d="M100.0 12.0L121.7 74.1L187.5 75.6L135.2 115.4L154.1 178.4L100.0 141.0L45.9 178.4L64.8 115.4L12.5 75.6L78.3 74.1Z"/>
+          <circle pathLength="100" cx="100" cy="104" r="98" stroke-width="1"/>
         </g>
-        <path class="loader__core" fill="url(#lg)" d="M100 74L106.1 91.6L124.7 92L109.9 103.3L115.3 121L100 110.4L84.7 121L90.1 103.3L75.3 92L93.9 91.6Z"/>
+        <!-- fertig: der Stern füllt sich mit Gold – facettiert wie im Logo -->
+        <g class="loader__core">
+          <path class="f-l" d="M100.0 104.0L100.0 12.0L78.3 74.1Z"/>
+          <path class="f-d" d="M100.0 104.0L100.0 12.0L121.7 74.1Z"/>
+          <path class="f-l" d="M100.0 104.0L187.5 75.6L121.7 74.1Z"/>
+          <path class="f-d" d="M100.0 104.0L187.5 75.6L135.2 115.4Z"/>
+          <path class="f-l" d="M100.0 104.0L154.1 178.4L135.2 115.4Z"/>
+          <path class="f-d" d="M100.0 104.0L154.1 178.4L100.0 141.0Z"/>
+          <path class="f-l" d="M100.0 104.0L45.9 178.4L100.0 141.0Z"/>
+          <path class="f-d" d="M100.0 104.0L45.9 178.4L64.8 115.4Z"/>
+          <path class="f-l" d="M100.0 104.0L12.5 75.6L64.8 115.4Z"/>
+          <path class="f-d" d="M100.0 104.0L12.5 75.6L78.3 74.1Z"/>
+        </g>
       </svg>
       <p class="loader__ar" lang="ar" dir="rtl">النجمة السورية</p>
       <p class="loader__name">Syrian Star</p>
@@ -407,6 +420,6 @@
     </div>
   </footer>
 
-  <script type="module" src="js/main.js?v=202610230900"></script>
+  <script type="module" src="js/main.js?v=202610231000"></script>
 </body>
 </html>
