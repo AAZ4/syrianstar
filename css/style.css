@@ -243,9 +243,13 @@ html.snap .footer { scroll-snap-align: end; }
 html.is-loading, html.is-loading body { overflow: hidden; }
 .loader { --p: 0; position: fixed; inset: 0; z-index: 200; display: grid; place-items: center; overflow: hidden; }
 /* zwei Türflügel mit orientalischem Fliesenmuster (wie eine geschnitzte Ladentür) */
-.loader__door { position: absolute; top: 0; bottom: 0; width: 50.5%; background: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='56' height='56' viewBox='0 0 56 56'%3E%3Cg fill='none' stroke='%23b08a3e' stroke-opacity='.16' stroke-width='1'%3E%3Cpath d='M16 16h24v24H16z'/%3E%3Cpath d='M28 11l17 17-17 17-17-17z'/%3E%3Ccircle cx='28' cy='28' r='6'/%3E%3Cpath d='M0 0l11 11M56 0L45 11M0 56l11-11M56 56L45 45'/%3E%3C/g%3E%3C/svg%3E") center / 56px, radial-gradient(120% 80% at 50% 40%, #fffdf8, var(--paper) 55%, var(--paper-2)); transition: transform .85s cubic-bezier(.7, 0, .2, 1); will-change: transform; }
-.loader__door--l { left: 0; border-right: 1px solid rgba(176, 138, 62, .35); }
-.loader__door--r { right: 0; border-left: 1px solid rgba(176, 138, 62, .35); }
+.loader__door { position: absolute; top: 0; bottom: 0; width: 50%; overflow: hidden; transition: transform .85s cubic-bezier(.7, 0, .2, 1); will-change: transform; }
+/* jedes Türblatt zeigt seine Hälfte EINES bildschirmbreiten Musters → keine Naht in der Mitte */
+.loader__door i { position: absolute; top: 0; bottom: 0; width: 100vw; background: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='56' height='56' viewBox='0 0 56 56'%3E%3Cg fill='none' stroke='%23b08a3e' stroke-opacity='.16' stroke-width='1'%3E%3Cpath d='M16 16h24v24H16z'/%3E%3Cpath d='M28 11l17 17-17 17-17-17z'/%3E%3Ccircle cx='28' cy='28' r='6'/%3E%3Cpath d='M0 0l11 11M56 0L45 11M0 56l11-11M56 56L45 45'/%3E%3C/g%3E%3C/svg%3E") 0 0 / 56px, radial-gradient(120% 80% at 50% 40%, #fffdf8, var(--paper) 55%, var(--paper-2)); }
+.loader__door--l { left: 0; }
+.loader__door--l i { left: 0; }
+.loader__door--r { right: 0; }
+.loader__door--r i { right: 0; }
 .loader__inner { position: relative; display: grid; justify-items: center; text-align: center; transition: opacity .5s var(--ease), transform .8s var(--ease); }
 /* Alles hier bewegt sich nur über transform/opacity: das rechnet die Grafikkarte, auch wenn der Prozessor
    gerade die Theke aufbaut – deshalb bleibt die Animation flüssig. */
@@ -259,7 +263,7 @@ html.is-loading, html.is-loading body { overflow: hidden; }
 .loader__bar i { display: block; height: 100%; background: linear-gradient(90deg, var(--brass-2), var(--brass)); transform-origin: left; transform: scaleX(var(--p)); transition: transform .5s var(--ease); will-change: transform; }
 .loader__core .f-l { fill: url(#lgL); }
 .loader__core .f-d { fill: url(#lgD); }
-.loader__core { transform-origin: 100px 104px; transform: scale(.6); opacity: calc(var(--p) * .25); transition: transform .6s cubic-bezier(.3, 1.6, .5, 1), opacity .4s; }
+.loader__core { position: absolute; left: 20px; top: 20px; width: 150px; height: 150px; transform: scale(.6); opacity: calc(var(--p) * .25); will-change: transform, opacity; transition: transform .6s cubic-bezier(.3, 1.6, .5, 1), opacity .4s; }
 .loader__ar { margin: 22px 0 4px; font: 600 30px/1.2 var(--f-ar); color: var(--brass); opacity: 0; animation: rise-in .9s var(--ease) .2s forwards; }
 .loader__name { margin: 0; font: 600 15px/1 var(--f-body); letter-spacing: .42em; margin-right: -.42em; text-transform: uppercase; color: var(--ink); opacity: 0; animation: rise-in .9s var(--ease) .45s forwards; }
 .loader__tag { margin: 14px 0 0; font: italic 500 17px/1 var(--f-display); color: var(--ink-soft); opacity: 0; animation: rise-in .9s var(--ease) .7s forwards; }

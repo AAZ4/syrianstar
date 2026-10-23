@@ -111,6 +111,7 @@ function initPieceModal() {
 // ─── Ladebildschirm: Stern zeichnet sich mit dem Fortschritt, dann öffnen sich die Türen ───
 const loader = $('#loader');
 const shownAt = performance.now();
+let loaderPause = null;   // wird gesetzt, sobald die Theke läuft
 const loaderProgress = (f) => { loader?.style.setProperty('--p', Math.max(0.08, Math.min(1, f)).toFixed(3)); };
 loaderProgress(0);
 function hideLoader() {
@@ -120,10 +121,11 @@ function hideLoader() {
   const wait = Math.max(0, 900 - (performance.now() - shownAt));
   setTimeout(() => {
     loader.classList.add('is-ready');                       // Stern landet in der Mitte
+    loaderPause?.(true);                                    // Theke kurz anhalten: volle Leistung für die Animation
     setTimeout(() => {
       loader.classList.add('is-done');                      // Türen öffnen sich
       document.documentElement.classList.remove('is-loading');
-      setTimeout(() => loader.remove(), 950);
+      setTimeout(() => { loader.remove(); loaderPause?.(false); }, 950);
     }, reducedMotion ? 0 : 380);
   }, wait);
 }
@@ -186,6 +188,7 @@ async function initVitrine() {
     const { initVitrine: init } = await import('./vitrine-scene.js');
     api = await init({ canvas, trays: TRAYS, reducedMotion, onTray: showTray, onSelect: showDetail, onProgress: loaderProgress });
     // Ladebildschirm ausblenden, sobald alles da ist – spätestens nach 8 Sekunden (langsames Netz)
+    loaderPause = (on) => (on ? api.stop() : api.start());
     Promise.race([api.ready, new Promise((r) => setTimeout(r, 8000))]).then(hideLoader);
     // Handy: Theke beginnt immer unterhalb des Begrüßungstexts – egal wie hoch oder schmal der Bildschirm ist
     const fitIntro = () => {
