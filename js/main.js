@@ -116,15 +116,15 @@ loaderProgress(0);
 function hideLoader() {
   if (!loader || loader.classList.contains('is-ready')) return;
   loaderProgress(1);
-  // mindestens ~1,4 s zeigen, damit die Animation nicht hektisch wirkt
-  const wait = Math.max(0, 1400 - (performance.now() - shownAt));
+  // mindestens ~0,9 s zeigen, damit es nicht nur aufblitzt
+  const wait = Math.max(0, 900 - (performance.now() - shownAt));
   setTimeout(() => {
     loader.classList.add('is-ready');                       // Stern landet in der Mitte
     setTimeout(() => {
       loader.classList.add('is-done');                      // Türen öffnen sich
       document.documentElement.classList.remove('is-loading');
-      setTimeout(() => loader.remove(), 1200);
-    }, reducedMotion ? 0 : 650);
+      setTimeout(() => loader.remove(), 950);
+    }, reducedMotion ? 0 : 380);
   }, wait);
 }
 setTimeout(hideLoader, 12000);   // Sicherheitsnetz, falls irgendetwas hängt

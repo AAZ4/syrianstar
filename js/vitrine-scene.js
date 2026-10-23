@@ -791,7 +791,10 @@ export async function initVitrine({ canvas, trays, onTray, onSelect, onHover, on
 
   // Schriften für die Namensschilder – aber höchstens 1,5 s warten
   await Promise.race([document.fonts?.ready, new Promise((r) => setTimeout(r, 1500))]);
-  trays.forEach((t, i) => {
+  const buildDone = task();   // zählt den Aufbau selbst mit, damit „fertig“ nicht zu früh gemeldet wird
+  for (let i = 0; i < trays.length; i++) {
+    const t = trays[i];
+    await new Promise((r) => setTimeout(r, 0));   // kurze Pause je Tablett: hält Ladeanimation und Seite flüssig
     const tray = new THREE.Group();
     tray.userData.index = i;
     tray.position.set(i * SPACING, 0, -0.05);
@@ -807,7 +810,7 @@ export async function initVitrine({ canvas, trays, onTray, onSelect, onHover, on
     const stand = new THREE.Mesh(new THREE.BoxGeometry(0.05, 0.1, 0.02), brass);
     stand.position.set(i * SPACING - 0.78, 0.05, 0.79);
     scene.add(stand);
-  });
+  }
 
   // Echte 3D-Modelle im Hintergrund nachladen und das Tablett dann austauschen,
   // damit die Theke nicht auf alle Dateien warten muss
@@ -824,6 +827,7 @@ export async function initVitrine({ canvas, trays, onTray, onSelect, onHover, on
       wake = clock.elapsedTime + 0.2;
     }).catch((err) => console.warn('GLB nicht geladen, nachgebautes Modell bleibt:', t.glb, err)).finally(fin);
   });
+  buildDone();
 
   // Shader und Texturen schon vorab zur Grafikkarte schicken – sonst ruckelt es beim ersten Hineinfahren
   function warm() {

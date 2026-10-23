@@ -17,7 +17,7 @@
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,500;0,600;0,700;1,500;1,600&family=Manrope:wght@400;500;600;700&family=Reem+Kufi:wght@400..700&display=swap" rel="stylesheet">
-  <link rel="stylesheet" href="css/style.css?v=202610231000">
+  <link rel="stylesheet" href="css/style.css?v=202610231100">
 
   <script type="importmap">
     { "imports": {
@@ -54,6 +54,9 @@
     <div class="loader__door loader__door--l"></div>
     <div class="loader__door loader__door--r"></div>
     <div class="loader__inner">
+      <div class="loader__mark">
+      <span class="loader__glow" aria-hidden="true"></span>
+      <span class="loader__ring" aria-hidden="true"></span>
       <svg class="loader__star" viewBox="0 0 200 200" aria-hidden="true">
         <defs>
           <linearGradient id="lgL" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#fbe7a1"/><stop offset=".6" stop-color="#e0b450"/><stop offset="1" stop-color="#b98a2c"/></linearGradient>
@@ -63,7 +66,6 @@
         <!-- Umriss des Logo-Sterns zeichnet sich mit dem Ladefortschritt -->
         <g class="loader__lines" fill="none" stroke="url(#lgS)" stroke-linejoin="round">
           <path pathLength="100" stroke-width="2" d="M100.0 12.0L121.7 74.1L187.5 75.6L135.2 115.4L154.1 178.4L100.0 141.0L45.9 178.4L64.8 115.4L12.5 75.6L78.3 74.1Z"/>
-          <circle pathLength="100" cx="100" cy="104" r="98" stroke-width="1"/>
         </g>
         <!-- fertig: der Stern füllt sich mit Gold – facettiert wie im Logo -->
         <g class="loader__core">
@@ -79,9 +81,11 @@
           <path class="f-d" d="M100.0 104.0L12.5 75.6L78.3 74.1Z"/>
         </g>
       </svg>
+      </div>
       <p class="loader__ar" lang="ar" dir="rtl">النجمة السورية</p>
       <p class="loader__name">Syrian Star</p>
       <p class="loader__tag">Süßes aus Damaskus · Aleppo · Hama</p>
+      <span class="loader__bar" aria-hidden="true"><i></i></span>
     </div>
   </div>
   <script>document.documentElement.classList.add('is-loading');</script>
@@ -420,6 +424,6 @@
     </div>
   </footer>
 
-  <script type="module" src="js/main.js?v=202610231000"></script>
+  <script type="module" src="js/main.js?v=202610231100"></script>
 </body>
 </html>
